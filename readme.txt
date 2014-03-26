@@ -13,21 +13,20 @@ Run A/B Split Tests in WordPress without having to edit code.
 == DESCRIPTION ==
 
 Website: [http://simplepagetester.com](http://simplepagetester.com)
+
 Premium Version: [http://simplepagetester.com/premium/](http://simplepagetester.com/premium/)
 
 Simple Page Tester empowers website owners to run Split Tests (also called A/B Tests) in WordPress without having to edit code as required by so many of the split testing services out there.
 
 We've made split testing simple, like it should be.
 
-= It's a simple three step process =
+It's a simple three step process:
 
 1. Navigate to the edit screen of the page you want to split test
 1. Click "Setup Split Test" and edit your variation
 1. Click "Declare Winner", in the Premium version it even tells you when!
 
-= Some features at a glance =
-
-Here are just some of the features of Simple Page Tester:
+Some features at a glance:
 
 **SEO FRIENDLY**
 
