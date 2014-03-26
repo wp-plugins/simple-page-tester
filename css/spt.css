@@ -1,0 +1,167 @@
+#spt_container {
+	padding: 20px 40px 20px 40px;
+	overflow: hidden;
+}
+
+.back_button {
+	text-align: left;
+	margin: 20px 0 0 0;
+}
+
+.spt_center {
+	padding: 10px 0 10px 0;
+	text-align: left;
+	width: 100%;
+}
+
+.spt_logo_center {
+	padding: 30px 20px;
+	text-align: center;
+	width: auto;
+	background: #303030;
+}
+
+#spt_logo {
+	margin: 0 auto 0 auto;
+}
+
+#duplicate_loader, .action {
+	display: none;
+}
+
+#spt_search_panel {
+	padding: 5px 0 5px 0;
+}
+
+#spt_search_results {
+	padding: 0;
+}
+
+.spt_search_wrapper {
+	padding: 5px 15px 5px 15px;
+	border: 1px solid #bbbbbb;
+	background: #E5E5E5;
+	text-align: left;
+}
+
+#spt_search_field {
+	width: 79%;
+}
+
+#spt_search_results ul {
+	margin: 0;
+	padding: 0;
+}
+
+#spt_search_results ul li {
+	padding: 12px 15px 24px 15px;
+	margin: 0;
+	border-bottom: 1px solid #dddddd;
+	border-left: 1px solid #dddddd;
+	border-right: 1px solid #dddddd;
+}
+
+#spt_search_results ul li.odd {
+	background: #eeeeee;
+}
+
+#spt_search_results ul li.even {
+	background: #e5e5e5;
+}
+
+#spt_search_results ul li:hover {
+	background: #dddddd;
+}
+
+#spt_search_results ul li span.spt_select_existing {
+	display: none;
+	float: right;
+	margin-top: -3px;
+	margin-right: -8px;
+	cursor: pointer;
+}
+
+#spt_search_results ul li:hover span.spt_select_existing {
+	display: block;
+}
+
+#spt_search_results ul li span.slug, span.spt_slug {
+	font-size: 10px;
+	color: 999999;
+	font-weight: normal;
+}
+
+.winner_loader {
+	margin-left: 5px;
+	display: none;
+}
+
+.sptVariationContainer {
+	width: 100%;
+	margin-right: 0;
+	margin-top: 1%;
+	display: block;
+	border: 1px solid #e5e5e5;
+}
+
+#sptMaster, #sptVariation {
+	padding: 10px;
+}
+
+#sptMaster tr td, #sptVariation tr td {
+	height: 30px;
+	vertical-align: middle;
+	width: 30%;
+	text-align: left;
+}
+
+#sptMaster th, #sptVariation th {
+	text-align: left;
+	width: 30%;
+}
+
+#sptMaster th h3, #sptVariation th h3 {
+	padding-left: 0;
+}
+
+#sptMaster .sptGoogleChart,
+#sptVariation .sptGoogleChart {
+	width: auto;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	padding: 10px;
+	height: 200px;
+	border: 1px solid #e5e5e5;
+}
+
+.sptDeclareButtonContainer {
+	padding: 0;
+	text-align: right;
+}
+
+.sptBiggerText {
+	font-size: 120%;
+	font-weight: bold;
+}
+
+#wp-admin-bar-view {
+	display: none;
+}
+
+#sptPremiumUpsell {
+	margin-left: -12px;
+	margin-top: -6px;
+	margin-bottom: -16px;
+}
+
+#sptBackupNotice {
+	background: #ffffff;
+	-webkit-box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+	-moz-box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+	box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+	padding: 0.2em 0.8em;
+	max-width: 85%;
+	position: absolute;
+	bottom: 2em;
+	border-left: 4px solid #7AD03A;
+}

@@ -1,0 +1,80 @@
+Simple Page Tester Manual
+-------------------------
+
+
+Introduction
+------------
+
+Thanks for downloading Simple Page Tester for WordPress.
+
+This document will take you through everything you need to know about using Simple Page Tester for split testing pages and posts on your website.
+
+
+Setting up your first split test
+--------------------------------
+
+It's very simple to setup a new split test.
+
+First, navigate to the edit screen for the page you want to split test.
+
+You can only split test a fully published page or post.
+
+On the right hand side of your published page or post you'll find Simple Page Tester.
+
+To setup a new split test, just click the "Setup New Split Test" button. If you don't see this button, it's likely your page is in draft mode or not published yet.
+
+On pressing setup you'll be presented with a screen showing three options.
+
+
+Options for creating your second page variation
+-----------------------------------------------
+
+The first option is to duplicate the current page which (as you probably guessed) duplicates the existing page and creates a new page for the split test.
+
+The second option is to choose an existing page. This is handy if you have already gone ahead and created a variation. Use the search tool to find your second page.
+
+Lastly, the third option is to create a blank page. This simply takes the title of the current page and creates a blank page for you to start editing.
+
+After you have chosen your method of creating/choosing the second page you will be presented with the split test screen.
+
+From here you can adjust how many people see which variation by adjusting the split percentage.
+
+You can access your current split tests at any time from the admin sidebar.
+
+Now you need to track your results.
+
+
+Tracking results
+----------------
+
+Having a goal that will determine your outcome is how you figure out which variation is best.
+
+Tracking how your split test is going is very important and that's why we create the Premium Version which not only includes conversion tracking but also the statistical analysis you need to be confident about your split testing results.
+
+If you aren't upgrading then you will need to do this the old fashioned way. One such way is to use Google Analytics and we've made a guide on how to do this here:
+
+http://simplepagetester.com/articles/setup-goals-split-test-tracking/
+
+
+Declaring a winning page
+------------------------
+
+Once your split test has been running for a while and you're confident you have figured out which page is performing the best it's time to declare the winner.
+
+You can do this either by editing the winning page itself and clicking on Declare Winner button, or you can also do the same by editing the split test and declaring your winning variation from there.
+
+IMPORTANT NOTE: Once you declare a winner, the other revision will be deleted permanently. This is because we are replacing the master page with the winning page.
+
+For more information on why you should backup before split testing to avoid any mishaps see this article:
+http://simplepagetester.com/articles/backup-your-site-before-split-test/
+
+
+Conclusion
+----------
+
+That concludes the documentation for Simple Page Tester.
+
+We hope you have fun with the plugin and it helps you improve your website.
+
+If you have any support questions please see our website:
+http://simplepagetester.com
