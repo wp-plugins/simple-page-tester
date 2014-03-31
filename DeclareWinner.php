@@ -1,6 +1,10 @@
 <?php
+if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
-$winnerID = $_POST['winner_id'];
+$winnerID = sptFilterData($_POST['winner_id']);
+if (!is_numeric($winnerID))
+	die();
+
 $sptID = get_post_meta($winnerID, 'sptID', true);
 
 $sptData = unserialize(get_post_meta($sptID, 'sptData', true));

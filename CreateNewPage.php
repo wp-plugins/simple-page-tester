@@ -1,5 +1,7 @@
 <?php
-$post_id = $_POST['post_id'];
+if (!defined('ABSPATH')) exit; // Exit if accessed directly
+
+$post_id = sptFilterData($_POST['post_id']);
 
 if (!empty($post_id) && is_numeric($post_id)) {
 	$post = get_post($post_id);

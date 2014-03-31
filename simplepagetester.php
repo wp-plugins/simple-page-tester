@@ -7,7 +7,7 @@
 * Author: Simple Page Tester
 * Author URI: http://www.simplepagetester.com
 * Plugin URI: http://simplepagetester.com
-* Version: 1.1
+* Version: 1.1.1
 */
 
 /*******************************************************************************
@@ -484,7 +484,7 @@ function sptSavePost($post_id) {
 	$sptDataOrig = unserialize(get_post_meta($post_id, 'sptData', true));
 	
 	$sptDataNew = array();
-	$sptDataNew = $_POST['sptData'];
+	$sptDataNew = sptFilterData($_POST['sptData']);
 	
 	$sptData = $sptDataNew;
 	
@@ -778,7 +778,7 @@ do_action('admin_head');
 	<div id="spt_container" class="wp-core-ui">
 		<script type="text/javascript">
 			/* Pass any required info like the post id */
-			var post_id = <?php echo $_GET['post_id']; ?>;
+			var post_id = <?php echo sptFilterData($_GET['post_id']); ?>;
 			var sptPluginDir = "<?php echo plugins_url('simple-page-tester/'); ?>";
 			var sptAdminUrl = "<?php echo admin_url(); ?>";
 			var sptAjaxUrl = "<?php echo admin_url(); ?>admin-ajax.php";
@@ -890,6 +890,31 @@ function sptCreateSptPost() {
 function sptDeclareWinner() {
 	include('DeclareWinner.php');
 	exit();
+}
+
+/******************************************************************************* 
+** sptFilterData
+** Filter all the data for nasty surprises
+** @since 1.1.1
+*******************************************************************************/
+function sptFilterData($data) {
+	if (is_array($data)) {
+		foreach ($data as $key => $elem) {
+			$data[$key] = sptFilterData($elem);
+		}
+	} else {
+		if (empty($data))
+			return $data;
+		
+		$data = nl2br(trim(htmlspecialchars(wp_kses_post($data), ENT_COMPAT)));
+		$breaks = array("\r\n", "\n", "\r");
+		$data = str_replace($breaks, "", $data);
+		
+		if (get_magic_quotes_gpc())
+			$data = stripslashes($data);
+		$data = mysql_real_escape_string($data);
+	}
+    return $data;
 }
 
 /******************************************************************************* 

@@ -1,6 +1,8 @@
 <?php
-$master_id = $_POST['master_id'];
-$slave_id = $_POST['slave_id'];
+if (!defined('ABSPATH')) exit; // Exit if accessed directly
+
+$master_id = sptFilterData($_POST['master_id']);
+$slave_id = sptFilterData($_POST['slave_id']);
 
 if ((!empty($master_id) && is_numeric($master_id)) && 
 	(!empty($slave_id) && is_numeric($slave_id))) {

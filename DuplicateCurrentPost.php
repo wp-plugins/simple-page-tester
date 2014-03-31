@@ -1,5 +1,10 @@
 <?php
-$post_id = $_POST['post_id'];
+if (!defined('ABSPATH')) exit; // Exit if accessed directly
+
+$post_id = sptFilterData($_POST['post_id']);
+if (!is_numeric($post_id))
+	die();
+
 if (!empty($post_id) && is_numeric($post_id)) {
 	$post = get_post($post_id);
 	
@@ -48,6 +53,18 @@ function sptDuplicatePost($post) {
 	
 		// Update the post into the database
 		wp_update_post($new_post);
+
+		// 1.1.1: Copy over custom fields and other post meta
+		$master_meta_keys = get_post_custom_keys($post->ID);
+		if ($master_meta_keys) {
+			foreach ($master_meta_keys as $meta_key) {
+				$meta_values = get_post_custom_values($meta_key, $post->ID);
+				foreach ($meta_values as $meta_value) {
+					$meta_value = maybe_unserialize($meta_value);
+					add_post_meta($new_post_id, $meta_key, $meta_value);
+				}
+			}
+		}
 	
 	}
 	

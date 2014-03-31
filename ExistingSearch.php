@@ -1,8 +1,9 @@
 <?php
+if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
-$search_query = (isset($_POST['search_query']) ? mysql_escape_string($_POST['search_query']) : '');
-$search_offset = (isset($_POST['search_offset']) ? $_POST['search_offset'] : 0);
-$current_post_id = (isset($_POST['current_post_id']) ? $_POST['current_post_id'] : '');
+$search_query = sptFilterData(isset($_POST['search_query']) ? mysql_escape_string($_POST['search_query']) : '');
+$search_offset = sptFilterData(isset($_POST['search_offset']) ? $_POST['search_offset'] : 0);
+$current_post_id = sptFilterData(isset($_POST['current_post_id']) ? $_POST['current_post_id'] : '');
 
 global $wpdb;
 $querystr = "SELECT * FROM $wpdb->posts	

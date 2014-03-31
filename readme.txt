@@ -65,6 +65,10 @@ Coming soon!
 
 == Changelog ==
 
+= 1.1.1 =
+* Correctly duplicate meta values from master post to variation
+* Harden up some access points throughout the plugin (thanks Ry)
+
 = 1.1 =
 * Released free version of Simple Page Tester on WordPress.org. Let the games begin :)
 
