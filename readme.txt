@@ -61,7 +61,11 @@ For a list of frequently asked questions and more [see our knowledge base](http:
 
 == Screenshots ==
 
-Coming soon!
+1. Starting a split test is easy, just click Setup New Split Test
+
+2. Dialog for choosing what to do with the Variation. Duplicate the page, Choose and existing page or start a new page 
+
+3. The split test details screen shows view stats in the free version and conversion details in the Premium version ([read about even more features in the Premium version](http://simplepagetester.com/premium/))
 
 == Changelog ==
 
