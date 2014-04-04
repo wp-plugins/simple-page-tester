@@ -69,6 +69,9 @@ For a list of frequently asked questions and more [see our knowledge base](http:
 
 == Changelog ==
 
+= 1.1.2 =
+* Adding after save hook during split test post save
+
 = 1.1.1 =
 * Correctly duplicate meta values from master post to variation
 * Harden up some access points throughout the plugin (thanks Ry)

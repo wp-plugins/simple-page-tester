@@ -7,7 +7,7 @@
 * Author: Simple Page Tester
 * Author URI: http://www.simplepagetester.com
 * Plugin URI: http://simplepagetester.com
-* Version: 1.1.1
+* Version: 1.1.2
 */
 
 /*******************************************************************************
@@ -149,6 +149,11 @@ function sptMetaBoxes() {
 	);
 }
 
+/*******************************************************************************
+** sptSidePremiumUpsellMetaBox
+** Setup upsell meta box
+** @since 1.0
+*******************************************************************************/
 function sptSidePremiumUpsellMetaBox() {
 	wp_nonce_field( plugin_basename(__FILE__), 'spt_noncename' );
 	global $post;
@@ -159,7 +164,6 @@ function sptSidePremiumUpsellMetaBox() {
 		return $post->ID;
 	}
 
-	// TODO: ADD CLICK TRACKING
 	echo '<a href="http://simplepagetester.com/premium/?utm_source=Free%20Plugin&utm_medium=Sidebar&utm_campaign=Upgrade%20To%20Premium" target="_blank"><img id="sptPremiumUpsell" src="' . plugins_url('simple-page-tester/images/premium.jpg') . '" alt="SPT Premium Version" /></a>';
 }
 
@@ -493,6 +497,9 @@ function sptSavePost($post_id) {
 
 	$sptData[$sptDataOrig['master_id'] . '_visits'] = $sptDataOrig[$sptDataOrig['master_id'] . '_visits'];
 	$sptData[$sptDataOrig['slave_id'] . '_visits'] = $sptDataOrig[$sptDataOrig['slave_id'] . '_visits'];
+
+	// 1.1.2 (jkohlbach) - adding after save hook
+	$sptData = apply_filters('spt_after_data_save', $sptData, $sptDataOrig);
 
 	/* Update the link data */
 	update_post_meta($post_id, 'sptData', serialize($sptData));
