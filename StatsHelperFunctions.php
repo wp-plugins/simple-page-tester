@@ -10,7 +10,7 @@
 ** @return array - organised link data
 ** @since 1.1
 *******************************************************************************/
-function sptGetChartData($splitTestID, $pageID, $fromDate = null, $toDate = null) {
+function sptGetChartData($splitTestID, $fromDate = null, $toDate = null) {
 	$dataArray = array();
 	
 	// First, sanitize the inputs
@@ -23,6 +23,10 @@ function sptGetChartData($splitTestID, $pageID, $fromDate = null, $toDate = null
 	// For each link, find the number of clicks for each given date
 	$dates = sptGetDays($fromDate, $toDate);
 	
+	// Get the test data
+	$sptData = unserialize(get_post_meta($splitTestID, 'sptData', true));
+
+	// Loop through the dates and count up the views
 	foreach ($dates as $date) {
 		$viewsForDate = 0;
 		
@@ -30,10 +34,11 @@ function sptGetChartData($splitTestID, $pageID, $fromDate = null, $toDate = null
 		$unixEndOfDate = mktime(23, 59, 59, date("m", strtotime($date)), date("d", strtotime($date)), date("Y", strtotime($date)));
 
 		// Get this day's views on this page
-		$viewsForDate = count(sptViewsForPeriod($splitTestID, $pageID, $unixStartOfDate, $unixEndOfDate));
+		$masterViewsForDate = count(sptViewsForPeriod($splitTestID, $sptData['master_id'], $unixStartOfDate, $unixEndOfDate));
+		$variationViewsForDate = count(sptViewsForPeriod($splitTestID, $sptData['slave_id'], $unixStartOfDate, $unixEndOfDate));
 		
 		// Add this day's views to the array
-		$dataArray[] = array($date, (!empty($viewsForDate) ? $viewsForDate : 0));
+		$dataArray[] = array($date, (!empty($masterViewsForDate) ? $masterViewsForDate : 0), (!empty($variationViewsForDate) ? $variationViewsForDate : 0));
 	}
 	
 	// Allow filtering of the chart data before return
@@ -124,124 +129,32 @@ function sptStatsSortFunction($dateA, $dateB) {
 }
 
 /******************************************************************************* 
-** sptClicksSoFarToday
-** Return all the clicks so far today as an array
-** @since 1.1
+** sptResetAllStats
+** Ajax handler to reset all stats for a test
+** @since 1.2
 *******************************************************************************/
-function sptClicksSoFarToday($link_id) {
-	$ct = current_time('timestamp', 0);
-	$startoftoday  = mktime(00, 00, 00, date("m", $ct), date("d", $ct), date("Y", $ct));
-	
-	return sptClicksForPeriod($link_id, 
-		$startoftoday,
-		$ct
-	);
-}
+function sptResetAllStats() {
+	$sptID = sptFilterData($_POST['spt_id']);
 
-/******************************************************************************* 
-** sptClicksSoFarThisWeek
-** Return all the clicks so far this week as an array
-** @since 1.1
-*******************************************************************************/
-function sptClicksSoFarThisWeek($link_id) {
-	$ct = current_time('timestamp', 0);
-	$startofthisweek  = mktime(23, 59, 59, date("m", $ct)  , date("d", $ct) - date('N', $ct), date("Y", $ct));
-	$endofthisweek  = mktime(23, 59, 59, date("m", $ct)  , date("d", $ct) + (7 - date('N', $ct)), date("Y", $ct));
-	
-	return sptClicksForPeriod($link_id, 
-		$startofthisweek,
-		$endofthisweek
-	);
-}
+	if (!is_numeric($sptID))
+		die();
 
-/******************************************************************************* 
-** sptClicksLastWeek
-** Return all the clicks last week as an array
-** @since 1.1
-*******************************************************************************/
-function sptClicksLastWeek($link_id) {
-	$ct = current_time('timestamp', 0);
-	$startoflastweek  = mktime(23, 59, 59, date("m", $ct)  , date("d", $ct) - (7 + date('N', $ct)), date("Y", $ct));
-	$endoflastweek  = mktime(23, 59, 59, date("m", $ct)  , date("d", $ct) - (date('N', $ct)), date("Y", $ct));
-	
-	return sptClicksForPeriod($link_id, 
-		$startoflastweek,
-		$endoflastweek
-	);
-	
-}
-
-/******************************************************************************* 
-** sptClicksSoFarThisMonth
-** Return all the clicks so far this month as an array
-** @since 1.1
-*******************************************************************************/
-function sptClicksSoFarThisMonth($link_id) {
-	$ct = current_time('timestamp', 0);
-	$startofthismonth  = mktime(00, 00, 00, date("m", $ct), 1, date("Y", $ct));
-	$endofthismonth  = mktime(23, 59, 59, date("m", $ct), date("t", $ct), date("Y", $ct));
-	
-	return sptClicksForPeriod($link_id, 
-		$startofthismonth,
-		$endofthismonth
-	);
-	
-}
-
-/******************************************************************************* 
-** sptClicksLastMonth
-** Return all the clicks last month as an array
-** @since 1.1
-*******************************************************************************/
-function sptClicksLastMonth($link_id) {
-	$ct = current_time('timestamp', 0);
-	$startoflastmonth  = mktime(00, 00, 00, date('m', $ct) - 1, 1, date("Y", $ct));
-	$endoflastmonth  = mktime(23, 59, 59, date('m', $ct), 0, date("Y", $ct));
-	
-	return sptClicksForPeriod($link_id, 
-		$startoflastmonth,
-		$endoflastmonth
-	);
-	
-}
-
-/******************************************************************************* 
-** sptClicksAllTime
-** Return all the clicks, ever, on this link as an array
-** @since 1.1
-*******************************************************************************/
-function sptClicksAllTime($link_id) {
-	$linkData = unserialize(get_post_meta($link_id, 'sptData', true));
-	return (!empty($linkData['linkclicks']) ? $linkData['linkclicks'] : 0);
-}
-
-/******************************************************************************* 
-** sptResetStatsForLink
-** Reset the stats on a particular link
-** @since 1.1
-*******************************************************************************/
-function sptResetStatsForLink($link_id) {
-	$linkData = unserialize(get_post_meta($link_id, 'sptData', true));
-	$linkData['linkclicks'] = array();
-	
-	update_post_meta($link_id, 'sptData', serialize($linkData));
-}
-
-/******************************************************************************* 
-** sptResetStatsForAllLinks
-** Reset the stats for all links
-** @since 1.1
-*******************************************************************************/
-function sptResetStatsForAllVariations($sptID) {
-	
 	$sptData = unserialize(get_post_meta($sptID, 'sptData', true));
+
+	if (empty($sptData))
+		die();
+
+	// Reset view stats
 	$sptData[$sptData['master_id'] . '_visits'] = array();
 	$sptData[$sptData['slave_id'] . '_visits'] = array();
-	$sptData[$sptData['master_id'] . '_conversions'] = array();
-	$sptData[$sptData['slave_id'] . '_conversions'] = array();
-		
+
+	// Apply filters to allow add-ons to do the same
+	$sptData = apply_filters('spt_after_stats_reset', $sptData);
+
+	// Re-save meta values
 	update_post_meta($sptID, 'sptData', serialize($sptData));
 
+	die();
 }
 
 /******************************************************************************* 
@@ -251,33 +164,17 @@ function sptResetStatsForAllVariations($sptID) {
 *******************************************************************************/
 function sptAjaxGetChartData() {
 	$splitTestID = (!empty($_POST['splitTestID']) ? $_POST['splitTestID'] : '');
-	$pageID = (!empty($_POST['pageID']) ? $_POST['pageID'] : '');
+	//$pageID = (!empty($_POST['pageID']) ? $_POST['pageID'] : '');
 	$fromDate = (!empty($_POST['fromDate']) ? $_POST['fromDate'] : '');
 	$toDate = (!empty($_POST['toDate']) ? $_POST['toDate'] : '');
 	
-	echo json_encode(sptGetChartData($splitTestID, $pageID, $fromDate, $toDate));
-	
-	die();
-}
-
-/******************************************************************************* 
-** sptAjaxResetStats
-** Ajax wrapper function for resetting the stats
-** @since 1.1
-*******************************************************************************/
-function sptAjaxResetStats() {
-	$sptID = (!empty($_POST['sptID']) ? $_POST['sptID'] : '');
-	
-	if (empty($sptID))
-		die();
-	
-	sptResetStatsForAllLinks($sptID);
+	echo json_encode(sptGetChartData($splitTestID, $fromDate, $toDate));
 	
 	die();
 }
 
 /* Register ajax calls */
 add_action('wp_ajax_sptAjaxGetChartData', 'sptAjaxGetChartData');
-add_action('wp_ajax_sptAjaxResetStats', 'sptAjaxResetStats');
+add_action('wp_ajax_sptResetAllStats', 'sptResetAllStats');
 
 ?>

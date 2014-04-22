@@ -31,33 +31,64 @@ jQuery(document).ready(function(){
 			}
 		);
 		
-	});	
+	});
+
+	jQuery('#sptResetAllStats').click(function() {
+		var spt_id = jQuery('input#post_ID').val();
+		
+		jQuery(this).addClass('button-disabled');
+		jQuery('#sptResetLoader').show();
+
+		jQuery.post(
+			ajaxurl,
+			{
+				action: 'sptResetAllStats',
+				spt_id: spt_id
+			},
+			function(result) {
+				jQuery('#sptResetLoader').hide();
+				window.location.reload(false);
+			}
+		);
+
+	});
 });
 
-function sptDrawChart(row_data, chart_id_name) {
-	if (isNaN(row_data.length))
-		row_data = Array();
+function sptDrawChart(chart_data, chart_id_name) {
+	if (typeof chart_data === 'undefined')
+		chart_data = Array();
 
 	var data = new google.visualization.DataTable();
 	data.addColumn("string", "Date");
-	data.addColumn("number", "Visits");
+
+	data.addColumn("number", "Visits (Master)");
 	
-	if (row_data[0].length == 3)
-		data.addColumn("number", "Conversions");
+	if (chart_data[0].length == 5)
+		data.addColumn("number", "Conversions (Master)");
+
+	data.addColumn("number", "Visits (Variation)");
+
+	if (chart_data[0].length == 5)
+		data.addColumn("number", "Conversions (Variation)");
 	
-	data.addRows(row_data);
+	data.addRows(chart_data);
 	
 	var options = {
 		width: "100%",
 		height: "100%",
 		title: "",
-		backgroundColor: "transparent",
+		backgroundColor: {
+			fill: "transparent",
+			stroke: "#eeeeee"
+		},
 		chartArea: {
 			width: "100%", 
-			height: "100%"
+			height: "75%",
+			top: 0
 		},
 		legend: {
-			position: "none"
+			position: "bottom",
+			alignment: "center"
 		},
 		hAxis: {
 			textPosition: "out"
@@ -72,8 +103,5 @@ function sptDrawChart(row_data, chart_id_name) {
 	var chart = new google.visualization.AreaChart(document.getElementById(chart_id_name));
 	chart.draw(data, options);
 	
-	var clickTotal = 0;
-	for (var i = 0; i < row_data.length; i++) {
-		clickTotal += row_data[i][1];
-	}
 }
+

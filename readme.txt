@@ -69,6 +69,18 @@ For a list of frequently asked questions and more [see our knowledge base](http:
 
 == Changelog ==
 
+= 1.2 =
+* Bug Fix: Force same should store session data relative to split test ID to cover cases where multiple tests are being run
+* Bug Fix: Force same tests don't need to redirect if they're already on the master page (thanks Ray)
+* Bug Fix: Fix for view statistics clearing during post save in some edge case scenarios
+* Bug Fix: Pass the test ID to after redirect hook
+* Feature: New test page to menu with instructions on how to start a new test
+* Feature: Reset statistics button
+* Feature: Pause test button, redirects all traffic to Master and doesn't record statistics
+* Feature: Move master and variation into same graph
+* Feature: Introduced types, default is Page (new test Shortcode test type in Premium)
+* Feature: Display more data on the list screen (test type & statistics to start with)
+
 = 1.1.2 =
 * Adding after save hook during split test post save
 

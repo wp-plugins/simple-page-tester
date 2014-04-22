@@ -20,7 +20,6 @@ function sptCreateSplitTestPost($master_id, $slave_id) {
 		'post_author' => $new_post_author->ID,
 		'post_date' => current_time('mysql'),
 		'post_date_gmt' => current_time('mysql', true),
-		'post_excerpt' => (get_option('duplicate_post_copyexcerpt') == '1') ? $post->post_excerpt : "",
 		'post_status' => 'publish',
 		'post_title' => get_the_title($master_id),
 		'post_type' => 'spt',

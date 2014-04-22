@@ -7,7 +7,7 @@
 * Author: Simple Page Tester
 * Author URI: http://www.simplepagetester.com
 * Plugin URI: http://simplepagetester.com
-* Version: 1.1.2
+* Version: 1.2
 */
 
 /*******************************************************************************
@@ -183,8 +183,9 @@ function sptNameMeta() {
 	
 	global $post;
 	$sptData = unserialize(get_post_meta($post->ID, 'sptData', true));
-	echo '<p><label class="infolabel" for="post_title">Test Name:</label></p>';
-	echo '<p><input id="test_name" name="post_title" value="' . $post->post_title . '" size="50" type="text" /><br /><em>This is a convenience name so you can recall your split test details later</em></p>';
+	echo '<p><label class="infolabel" for="post_title">Split Test Name:</label></p>';
+	echo '<p><input id="test_name" name="post_title" value="' . $post->post_title . '" size="50" type="text" /><br />
+	<em>This is a convenience name so you can recall what your split test is about later.</em></p>';
 }
 
 /*******************************************************************************
@@ -203,6 +204,12 @@ function sptDetailsMeta() {
 	}
 	$sptData = array();
 	$sptData = unserialize(get_post_meta($post->ID, 'sptData', true));
+
+	// Check the split test type
+	if (isset($sptData['splitTestType']) && !empty($sptData['splitTestType']) && $sptData['splitTestType'] != 'page') {
+		do_action('spt_alternate_split_test_type_details');
+		return;
+	}
 	
 	$masterPost = get_post($sptData['master_id']);
 	$slavePost = get_post($sptData['slave_id']);
@@ -211,10 +218,15 @@ function sptDetailsMeta() {
 	<div class="sptVariationContainer">
 		<table id="sptMaster" width="100%">
 			<tr>
-				<th colspan="3"><h3>Master</h3></th>
+				<td colspan="3"><div id="sptChart" style="height: 350px;" class="sptGoogleChart"><img id="sptChartLoader" src="' . plugins_url('simple-page-tester/images/spt-loader.gif') . '" /></div></td>
 			</tr>
+		</table>
+	</div>
+
+	<div class="sptVariationContainer">
+		<table id="sptMaster" width="100%">
 			<tr>
-				<td colspan="3"><div id="sptMasterChart" class="sptGoogleChart"><img id="sptMasterChartLoader" src="' . plugins_url('simple-page-tester/images/spt-loader.gif') . '" /></div></td>
+				<th colspan="3"><h3>Master</h3></th>
 			</tr>
 				<th scope="row">Page Name:</th>
 				<td>' . $masterPost->post_title . '</td>
@@ -259,9 +271,6 @@ function sptDetailsMeta() {
 		<table id="sptVariation" width="100%">
 			<tr>
 				<th colspan="3"><h3>Variation</h3></th>
-			</tr>
-			<tr>
-				<td colspan="3"><div id="sptVariationChart" class="sptGoogleChart"><img id="sptVariationChartLoader" src="' . plugins_url('simple-page-tester/images/spt-loader.gif') . '" /></div></td>
 			</tr>
 				<th scope="row">Page Name:</th>
 				<td>' . $slavePost->post_title . '</td>
@@ -310,8 +319,7 @@ function sptDetailsMeta() {
 	google.load("visualization", "1", {packages:["corechart"]});
 	// Global container for the returned JSON data for the charts so we don\'t have to 
 	// query the DB again
-	var masterChartJSON = [];
-	var variationChartJSON = [];
+	var sptChartJSON = [];
 
 	jQuery(document).ready(function() {
 		sptLoadChart();
@@ -319,20 +327,17 @@ function sptDetailsMeta() {
 		// Take care of resizing the chart when the window is resized dynamically
 		jQuery(window).resize(function() {
 			jQuery("#sptMasterChart").html("");
-			sptDrawChart(masterChartJSON, "sptMasterChart");
-			jQuery("#sptVariationChart").html("");
-			sptDrawChart(variationChartJSON, "sptVariationChart");
+			sptDrawChart(sptChartJSON, "sptChart");
 		});
 	});
 
 	function sptLoadChart() {
-		jQuery("#sptMasterChart").html("<img id=\"sptMasterChartLoader\" src=\"' . plugins_url('simple-page-tester/images/spt-loader.gif') . '\" />");
+		jQuery("#sptChart").html("<img id=\"sptChartLoader\" src=\"' . plugins_url('simple-page-tester/images/spt-loader.gif') . '\" />");
 		jQuery.post(
 			ajaxurl,
 			{
 				action: "sptAjaxGetChartData",
-				splitTestID: ' . $post->ID . ',
-				pageID: ' . $masterPost->ID . '
+				splitTestID: ' . $post->ID . '
 			},
 			function(results) {
 				var jsonResults = jQuery.parseJSON(results);
@@ -340,30 +345,10 @@ function sptDetailsMeta() {
 					jsonResults = Array();
 				
 				// Set global JSON storage
-				masterChartJSON = jsonResults;
+				sptChartJSON = jsonResults;
 
-				sptDrawChart(masterChartJSON, "sptMasterChart");
-				jQuery("#sptMasterChartLoader").hide();
-			}
-		);
-		jQuery("#sptVariationChart").html("<img id=\"sptVariationChartLoader\" src=\"' . plugins_url('simple-page-tester/images/spt-loader.gif') . '\" />");
-		jQuery.post(
-			ajaxurl,
-			{
-				action: "sptAjaxGetChartData",
-				splitTestID: ' . $post->ID . ',
-				pageID: ' . $slavePost->ID . '
-			},
-			function(results) {
-				var jsonResults = jQuery.parseJSON(results);
-				if (jsonResults == null)
-					jsonResults = Array();
-
-				// Set global JSON storage
-				variationChartJSON = jsonResults;
-
-				sptDrawChart(variationChartJSON, "sptVariationChart");
-				jQuery("#sptVariationChartLoader").hide();
+				sptDrawChart(sptChartJSON, "sptChart");
+				jQuery("#sptChartLoader").hide();
 			}
 		);
 	}
@@ -399,8 +384,10 @@ function sptSideOptionsMeta() {
 
 	if (isset($sptData['force_same']) && $sptData['force_same'] == 'on') $sptData['force_same'] = ' checked="checked"';
 
+	// Core options
 	echo '<input type="checkbox" name="sptData[force_same]" id="sptForceSame"' .  $sptData['force_same'] . ' /> <label for="sptForceSame">Force Users To View The Same Variation During A Browsing Session</label>';
 
+	// Hook so others can add their own options
 	do_action('spt_after_side_options');
 
 }
@@ -507,6 +494,53 @@ function sptSavePost($post_id) {
 }
 
 /*******************************************************************************
+** sptRecordVisit
+** Record the visit to the page if required. Uses global post data to determine 
+** the page to record.
+** @param $sptID - the ID of the split test
+** @param $sptData - the data of the split test
+** @since 1.1.3
+*******************************************************************************/
+function sptRecordVisit($sptID, $sptData) {
+	session_start();
+	global $post;
+
+	// If in doubt, record the visit, next we'll test some conditions where it shouldn't recorded
+	$recordTheVisit = true;
+
+	// TODO: Detect if logged in users should be tracked or not
+	/*if (global option says not to record logged in users and user is logged in) {
+		$recordTheVisit = false;
+	}*/
+
+	// Check if we should record the visit if we're forcing visitors to view the same page
+	if (isset($sptData['force_same']) && $sptData['force_same'] == 'on' &&
+		isset($_SESSION['spt_force_same_' . $sptID]) && !empty($_SESSION['spt_force_same_' . $sptID])) {
+		$recordTheVisit = false;
+	}
+
+	// Record the visit, but only if all preconditions are satisfied
+	if ($recordTheVisit) {
+		
+		if ($sptData['master_id'] == $post->ID) $masterOrSlave = $sptData['master_id'] . '_visits';
+		if ($sptData['slave_id'] == $post->ID) $masterOrSlave = $sptData['slave_id'] . '_visits';
+		
+		$sptData[$masterOrSlave][] = array(
+			'timestamp' => current_time('timestamp'),
+			'ip' => getenv(REMOTE_ADDR)
+		);
+		
+		// If we are forcing users to view the same page, record the page so we know 
+		// not to record future visits
+		if (isset($sptData['force_same']) && $sptData['force_same'] == 'on') {
+			$_SESSION['spt_force_same_' . $sptID] = $post->ID;
+		}
+
+		update_post_meta($sptID, 'sptData', serialize($sptData));
+	}
+}
+
+/*******************************************************************************
 ** sptRedirect
 ** Redirect the page for the given split amount for the test to the page
 ** @since 1.0
@@ -515,10 +549,8 @@ function sptRedirect() {
 	session_start();
 	global $post;
 	
-	
 	// Check if this is the first redirect and if so record the visit
 	if (isset($_SESSION['spt_redirect']) && $_SESSION['spt_redirect'] == true) {
-		
 		// Unset the session variable because we might end up visiting again
 		unset($_SESSION['spt_redirect']);
 		
@@ -532,46 +564,13 @@ function sptRedirect() {
 		if ($sptData == null || empty($sptData))
 			return;
 			
-		// If in doubt, record the visit, next we'll test some conditions where it shouldn't recorded
-		$recordTheVisit = true;
+		sptRecordVisit($sptID, $sptData);
 
-		// TODO: Detect if logged in users should be tracked or not
-		/*if (global option says not to record logged in users and user is logged in) {
-			$recordTheVisit = false;
-		}*/
-
-		// Check if we should record the visit if we're forcing visitors to view the same page
-		if (isset($sptData['force_same']) && $sptData['force_same'] == 'on' &&
-			isset($_SESSION['spt_force_same_pageid']) && !empty($_SESSION['spt_force_same_pageid'])) {
-			$recordTheVisit = false;
-		}
-
-		// Record the visit, but only if all preconditions are satisfied
-		if ($recordTheVisit) {
-			
-			if ($sptData['master_id'] == $post->ID) $masterOrSlave = $sptData['master_id'] . '_visits';
-			if ($sptData['slave_id'] == $post->ID) $masterOrSlave = $sptData['slave_id'] . '_visits';
-			
-			$sptData[$masterOrSlave][] = array(
-				'timestamp' => current_time('timestamp'),
-				'ip' => getenv(REMOTE_ADDR)
-			);
-			
-			// If we are forcing users to view the same page, record the page so we know 
-			// not to record future visits
-			if (isset($sptData['force_same']) && $sptData['force_same'] == 'on') {
-				$_SESSION['spt_force_same_pageid'] = $post->ID;
-			}
-
-			update_post_meta($sptID, 'sptData', serialize($sptData));
-		}
-
-		do_action('spt_after_redirect');
+		do_action('spt_after_redirect', $sptID);
 		
 		// Exit here so we don't end up redirecting again
 		return;
 	} else {
-		
 		// Get the split test ID and exit if it's not valid
 		$sptID = get_post_meta($post->ID, 'sptID', true);
 		if ($sptID == null || empty($sptID) || !is_numeric($sptID) || $sptID == '0')
@@ -604,6 +603,13 @@ function sptRedirect() {
 			if (isset($sptData['force_same']) && $sptData['force_same'] == 'on') {
 				$pageID = $_SESSION['spt_page' . $sptID];
 			}
+		}
+
+		// Check if we should bother redirecting, if we're forcing visitors to view the same page there is no need
+		if (isset($sptData['force_same']) && $sptData['force_same'] == 'on' &&
+			isset($_SESSION['spt_force_same_' . $sptID]) && !empty($_SESSION['spt_force_same_' . $sptID])) {
+			sptRecordVisit($sptID, $sptData);
+			return;
 		}
 
 		// Get the URL for the selected landing page 
@@ -664,7 +670,7 @@ function sptRemoveItemsFromEditList($actions, $post) {
 function sptHideAddNewFromEditPage() {
 	global $current_screen;
 
-    if($current_screen && $current_screen->post_type == 'spt') {
+    if ($current_screen && $current_screen->post_type == 'spt') {
     	echo '<style type="text/css">
     	#favorite-actions {display:none;}
     	.add-new-h2{display:none;}
@@ -924,6 +930,136 @@ function sptFilterData($data) {
     return $data;
 }
 
+/*******************************************************************************
+** sptSetupAddShortcodeTestPage
+** Add SPT premium settings page to settings menu
+** @since 1.2
+*******************************************************************************/
+function sptSetupAddNewMenuItems() {
+	add_submenu_page(
+		'edit.php?post_type=spt',
+		'Add Page Test',
+		'Add Page Test',
+		'manage_options',
+		'sptNewPageSplitTest',
+		'sptNewPageSplitTest'
+	);
+}
+
+/*******************************************************************************
+** sptNewPageSplitTest
+** Add new page test screen
+** @since 1.2
+*******************************************************************************/
+function sptNewPageSplitTest() {
+	if (!current_user_can('manage_options'))  {
+		wp_die( __('You do not have suffifient permissions to access this page.') );
+	}
+
+	echo '<div class="wrap">';
+
+	echo '<h2>Page Split Test Setup</h2>';
+
+	echo '<p>1. To setup a new page split test, you need to navigate to the edit 
+	screen for your master page and click on the Setup Split Test button which you will 
+	find on the bottom right of the page.</p>';
+
+	echo '<img src="' . plugins_url('simple-page-tester/images/add-new-1.jpg') . '" alt="Setup Split Test" />';
+
+	echo '<p>2. Once you have clicked the button you will be presented with a dialog box 
+	to determine what to do for the Variation. Choose the option you would like and 
+	Simple Page Tester will add the Variation for the test.</p>';
+
+	echo '<img src="' . plugins_url('simple-page-tester/images/add-new-2.jpg') . '" alt="Variation Dialog Box" />';
+
+	echo '<p>3. After you have picked your Variation option and the Variation has been added 
+	to the test you need to edit the Variation. Note that the test is now active.</p>';
+
+	echo '<p>Goto the listing screen for the post type you wish to test: <br /><br />';
+	echo '<a href="' . admin_url('edit.php?post_type=page') . '" class="button-primary">Goto Pages Listing &rarr;</a>&nbsp;';
+	echo '<a href="' . admin_url('edit.php?post_type=post') . '" class="button-primary">Goto Posts Listing &rarr;</a>&nbsp;';
+
+	do_action('spt_after_new_page_test_description');
+
+	echo '</div><!-- .wrap -->';
+}
+
+/******************************************************************************* 
+** sptAddStatsResetButtons
+** Present a button to reset the stats on the options sidebar meta
+** @since 1.2
+*******************************************************************************/
+function sptAddStatsResetButtons() {
+	echo '<p>Reset the test statistics:<br />
+	<input type="button" class="button-secondary" id="sptResetAllStats" value="Reset All Stats" />
+	<img id="sptResetLoader" style="display: none;" src="' . plugins_url('simple-page-tester/images/spt-loader.gif') . '" /><br />
+	<em>Note: this can\'t be undone.</em></p>';
+}
+
+/******************************************************************************* 
+** sptAddCustomColumns
+** Add custom columns to the list page (type, stats, etc)
+** @since 1.2
+*******************************************************************************/
+function sptAddCustomColumns($columns) {
+	echo '<pre>DEBUG: ' . print_r($columns, true) . '</pre>';
+    unset($columns['date']);
+    $columns['title'] = 'Test Name';
+    $columns['sptTestType'] = 'Test Type';
+    $columns['sptTestStats'] = 'Statistics';
+    $columns['date'] = 'Created Date';
+    return $columns;
+}
+
+/******************************************************************************* 
+** sptAddCustomColumnsContent
+** Add custom columns content to the list page (type, stats, etc)
+** @since 1.2
+*******************************************************************************/
+function sptAddCustomColumnsContent($column, $post_id) {
+	$sptData = unserialize(get_post_meta($post_id, 'sptData', true));
+	if (isset($sptData) && !empty($sptData)) {
+		switch ($column) {
+			case 'sptTestType':
+				if (isset($sptData['splitTestType']) && !empty($sptData['splitTestType'])) {
+					echo ucwords($sptData['splitTestType']);
+				} else {
+					echo 'Page';
+				}
+			break;
+			case 'sptTestStats':
+				$html = '';
+
+				$master = array(
+					'visits' => count($sptData[$sptData['master_id'] . '_visits'])
+				);
+
+				$variation = array(
+					'visits' => count($sptData[$sptData['slave_id'] . '_visits'])
+				);
+
+				if ($master['visits'] > 0) {
+					$html .= '<strong>Master:</strong> ' . count($sptData[$sptData['master_id'] . '_visits']) . ' visits';
+					$html .= '<br />';
+				} else {
+					$html .= '<strong>Master:</strong> No stats yet!<br />';
+				}
+				
+				if ($variation['visits'] > 0) {
+					$html .= '<strong>Variation:</strong> ' . count($sptData[$sptData['slave_id'] . '_visits']) . ' visits';
+					$html .= '<br />';
+				} else {
+					$html .= '<strong>Variation:</strong> No stats yet!<br />';
+				}
+
+				$html = apply_filters('spt_list_column_test_stats', $html, $sptData);
+
+				echo $html;
+			break;
+		}
+	}
+}
+
 /******************************************************************************* 
 ** sptActivation
 ** On activation add flush flag which gets removed after flushing the rules once
@@ -973,6 +1109,14 @@ function sptInit() {
 	add_action('wp_ajax_sptReplaceSearchResults', 'sptReplaceSearchResults');
 	add_action('wp_ajax_sptCreateSptPost', 'sptCreateSptPost');
 	add_action('wp_ajax_sptDeclareWinner', 'sptDeclareWinner');
+
+	// Add stats reset buttons to options, right at the bottom
+	add_action('spt_after_side_options', 'sptAddStatsResetButtons', 100);
+
+	// Add stuff to list page
+	add_filter('manage_spt_posts_columns', 'sptAddCustomColumns', 10, 1);
+	add_action('manage_spt_posts_custom_column', 'sptAddCustomColumnsContent', 10, 2);
+
 }
 
 /******************************************************************************* 
@@ -998,11 +1142,13 @@ register_deactivation_hook(__FILE__, 'sptDeactivation');
 add_action('init', 'sptInit');
 add_action('admin_init', 'sptAdminInit');
 
-/* Remove submenus from SPT menu */
+/* Remove submenus from SPT menu and add custom ones */
 add_action('admin_menu', 'sptRemoveAddNew');
+add_action('admin_menu', 'sptSetupAddNewMenuItems', 10);
 
 /* Remove SPT from the add new menu on the admin bar */
 add_action('wp_before_admin_bar_render', 'sptHideAddNewFromAdminBar');
 
 /* Include the stats helper functions */
 require_once('StatsHelperFunctions.php');
+

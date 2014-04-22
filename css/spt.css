@@ -1,5 +1,5 @@
 #spt_container {
-	padding: 20px 40px 20px 40px;
+	padding: 20px 40px 100px 40px;
 	overflow: hidden;
 }
 
@@ -85,13 +85,13 @@
 	display: block;
 }
 
-#spt_search_results ul li span.slug, span.spt_slug {
+#spt_search_results ul li span.slug, span.spt_slug, .spt_existing_search_post_type {
 	font-size: 10px;
 	color: 999999;
 	font-weight: normal;
 }
 
-.winner_loader {
+.winner_loader, #sptResetLoader {
 	margin-left: 5px;
 	display: none;
 }
@@ -124,14 +124,21 @@
 	padding-left: 0;
 }
 
-#sptMaster .sptGoogleChart,
-#sptVariation .sptGoogleChart {
+.sptGoogleChart {
 	width: auto;
 	margin-top: 10px;
 	margin-bottom: 10px;
 	padding: 10px;
-	height: 200px;
+	height: 350px;
 	border: 1px solid #e5e5e5;
+}
+
+#sptChartLoader {
+	position: relative;
+	left: 50%;
+	top: 50%;
+	margin-top: -16px;
+	margin-left: -16px;
 }
 
 .sptDeclareButtonContainer {
@@ -161,7 +168,11 @@
 	box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
 	padding: 0.2em 0.8em;
 	max-width: 85%;
-	position: absolute;
+	position: fixed;
 	bottom: 2em;
 	border-left: 4px solid #7AD03A;
+}
+
+.spt_existing_search_post_type {
+	font-style: italic;
 }
