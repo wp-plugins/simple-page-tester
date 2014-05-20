@@ -7,7 +7,7 @@
 * Author: Simple Page Tester
 * Author URI: http://www.simplepagetester.com
 * Plugin URI: http://simplepagetester.com
-* Version: 1.2
+* Version: 1.2.1
 */
 
 /*******************************************************************************
@@ -45,7 +45,7 @@ function sptRegisterPostType() {
 				'comments' => false,
 				'revisions' => false,
 				'page-attributes' => false,
-				'post-formats' => false			
+				'post-formats' => false
 			),
 			'show_in_menu' => true,
 			'show_in_nav_menus' => false,
@@ -54,7 +54,7 @@ function sptRegisterPostType() {
 			'menu_icon' => plugins_url('simple-page-tester/images/icon-spt.png')
 		)
 	);
-	
+
 	if (get_option('spt_flush') == 'true') {
         flush_rewrite_rules();
         delete_option('spt_flush');
@@ -68,7 +68,7 @@ function sptRegisterPostType() {
 *******************************************************************************/
 function sptMetaBoxes() {
 	/* Add SPT meta boxes */
-	
+
 	add_meta_box(
 		'spt-name-meta',
 		'Split Test Name',
@@ -77,7 +77,7 @@ function sptMetaBoxes() {
 		'normal',
 		'high'
 	);
-	
+
 	add_meta_box(
 		'spt-details-meta',
 		'Split Test Details',
@@ -86,11 +86,11 @@ function sptMetaBoxes() {
 		'normal',
 		'high'
 	);
-	
+
 	/* Save boxes on SPT type */
-	
+
 	remove_meta_box( 'submitdiv', 'spt', 'side' );
-	
+
 	add_meta_box(
 		'spt-save-link-side-meta',
 		'Save Split Test',
@@ -99,7 +99,7 @@ function sptMetaBoxes() {
 		'side',
 		'high'
 	);
-	
+
 	add_meta_box(
 		'spt-save-link-bottom-meta',
 		'Save Split Test',
@@ -127,9 +127,9 @@ function sptMetaBoxes() {
 		'side',
 		'low'
 	);
-	
+
 	/* Add new split test box to pages */
-	
+
 	add_meta_box(
 		'spt-page-sidebar-meta',
 		'Split Test',
@@ -138,7 +138,7 @@ function sptMetaBoxes() {
 		'side',
 		'low'
 	);
-	
+
 	add_meta_box(
 		'spt-page-sidebar-meta',
 		'Split Test',
@@ -174,13 +174,13 @@ function sptSidePremiumUpsellMetaBox() {
 *******************************************************************************/
 function sptNameMeta() {
 	wp_nonce_field( plugin_basename(__FILE__), 'spt_noncename' );
-	
+
 	/* Make sure we only do this for regular saves and we have permission */
 	if ((defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) ||
 		!current_user_can( 'edit_page', $post->ID ) ) {
 		return $post->ID;
 	}
-	
+
 	global $post;
 	$sptData = unserialize(get_post_meta($post->ID, 'sptData', true));
 	echo '<p><label class="infolabel" for="post_title">Split Test Name:</label></p>';
@@ -196,7 +196,7 @@ function sptNameMeta() {
 function sptDetailsMeta() {
 	global $post;
 	wp_nonce_field( plugin_basename(__FILE__), 'spt_noncename' );
-	
+
 	/* Make sure we only do this for regular saves and we have permission */
 	if ((defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) ||
 		!current_user_can( 'edit_page', $post->ID ) ) {
@@ -210,10 +210,10 @@ function sptDetailsMeta() {
 		do_action('spt_alternate_split_test_type_details');
 		return;
 	}
-	
+
 	$masterPost = get_post($sptData['master_id']);
 	$slavePost = get_post($sptData['slave_id']);
-	
+
 	echo '
 	<div class="sptVariationContainer">
 		<table id="sptMaster" width="100%">
@@ -249,8 +249,8 @@ function sptDetailsMeta() {
 					<select name="sptData[master_weight]" id="master_weight">';
 
 	for ($i = 90; $i > 0; $i = $i - 10) {
-		echo '<option value="' . $i . '"' . 
-		($sptData['master_weight'] == $i ? ' selected="selected"' : '') . 
+		echo '<option value="' . $i . '"' .
+		($sptData['master_weight'] == $i ? ' selected="selected"' : '') .
 		'>' . $i . '</option>';
 	}
 	echo '			</select> %
@@ -263,7 +263,7 @@ function sptDetailsMeta() {
 
 	do_action('spt_master_table_content_end', $post->ID, $sptData['master_id']);
 
-	echo '	
+	echo '
 		</table>
 	</div><!-- /.sptVariationContainer -->
 
@@ -293,11 +293,11 @@ function sptDetailsMeta() {
 					<select name="sptData[slave_weight]" id="slave_weight">';
 
 	for ($i = 90; $i > 0; $i = $i - 10) {
-		echo '<option value="' . $i . '"' . 
-		($sptData['slave_weight'] == $i ? ' selected="selected"' : '') . 
+		echo '<option value="' . $i . '"' .
+		($sptData['slave_weight'] == $i ? ' selected="selected"' : '') .
 		'>' . $i . '</option>';
 	}
-	
+
 	echo '			</select> %
 				</td>
 			</tr>
@@ -317,7 +317,7 @@ function sptDetailsMeta() {
 	echo '<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 	<script type="text/javascript">
 	google.load("visualization", "1", {packages:["corechart"]});
-	// Global container for the returned JSON data for the charts so we don\'t have to 
+	// Global container for the returned JSON data for the charts so we don\'t have to
 	// query the DB again
 	var sptChartJSON = [];
 
@@ -343,7 +343,7 @@ function sptDetailsMeta() {
 				var jsonResults = jQuery.parseJSON(results);
 				if (jsonResults == null)
 					jsonResults = Array();
-				
+
 				// Set global JSON storage
 				sptChartJSON = jsonResults;
 
@@ -353,7 +353,7 @@ function sptDetailsMeta() {
 		);
 	}
 	</script>';
-	
+
 }
 
 /*******************************************************************************
@@ -363,13 +363,13 @@ function sptDetailsMeta() {
 *******************************************************************************/
 function sptSaveBoxMeta() {
 	global $post;
-	
+
 	echo '<input name="original_publish" type="hidden" id="original_publish" value="Save" />';
 	echo '<input name="save" type="submit" class="button-primary" id="publish" tabindex="5" accesskey="p" value="Save Split Test">';
-	
+
 	if (current_user_can("delete_post", $post->ID)) {
 		echo '&nbsp;&nbsp;<a class="submitdelete deletion" href="' . get_delete_post_link($post->ID) . '">Cancel Split Test</a>';
-	}		
+	}
 }
 
 /*******************************************************************************
@@ -401,47 +401,47 @@ function sptSideOptionsMeta() {
 function sptPageSidebarBoxMeta() {
 	wp_nonce_field( plugin_basename(__FILE__), 'spt_noncename' );
 	global $post;
-	
+
 	if ($post->post_status != 'publish') {
-		echo '<p>Looks like this page hasn\'t been published yet. 
+		echo '<p>Looks like this page hasn\'t been published yet.
 		The page must be published in order to run a split test.</p>';
 		return;
 	}
-	
+
 	$isBeingTested = false;
 	$isMaster = false;
-	$isSlave = false;	
-	
+	$isSlave = false;
+
 	$sptID = 0;
 	$sptData = array();
-	
+
 	$sptID = get_post_meta($post->ID, 'sptID', true);
 	if ($sptID != null && !empty($sptID) && is_numeric($sptID) && $sptID != '0') {
 		$sptData = unserialize(get_post_meta($sptID, 'sptData', true));
-		
+
 		if ($sptData['master_id'] == $post->ID) $isMaster = true;
 		if ($sptData['slave_id'] == $post->ID) $isSlave = true;
-		
+
 		if ($isMaster || $isSlave)
 			$isBeingTested = true;
 	}
-	
+
 	if ($isBeingTested) {
 		if ($isMaster) {
 			echo '<p>This page is the master page in a split test.</p>
-			<p><a href="' . admin_url('post.php?post=' . $sptID . '&action=edit') . 
+			<p><a href="' . admin_url('post.php?post=' . $sptID . '&action=edit') .
 			'" class="button">View Split Test Details</a></p>';
 			echo '<p><a id="' . $sptData['master_id'] . '" class="button-primary spt_declare">Declare Winner</a><img class="winner_loader" src="' . plugins_url('simple-page-tester/images/spt-loader.gif') . '" /></p>';
 			return;
 		} else if ($isSlave) {
 			echo '<p>This page is the secondary page in a split test.</p>
-			<p><a href="' . admin_url('post.php?post=' . $sptID . '&action=edit') . 
+			<p><a href="' . admin_url('post.php?post=' . $sptID . '&action=edit') .
 			'" class="button">View Split Test Details</a></p>';
 			echo '<p><a id="' . $sptData['slave_id'] . '" class="button-primary spt_declare">Declare Winner</a><img class="winner_loader" src="' . plugins_url('simple-page-tester/images/spt-loader.gif') . '" /></p>';
 			return;
 		}
 	}
-	
+
 	echo '<p>To use this page as the master page in a split test simply click the setup button below:</p>';
 	echo '<p><span title="Simple Page Tester: New split test" id="sptSetupSplitTest" class="button-secondary">Setup New Split Test</span></p>';
 
@@ -464,21 +464,21 @@ function sptSavePost($post_id) {
 		!empty($_POST['post_type']) && $_POST['post_type'] != 'spt') {
 		return $post_id;
 	}
-	
+
 	if (!wp_verify_nonce( $_POST['spt_noncename'], plugin_basename(__FILE__) ) ||
 		(defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) ||
 		!current_user_can( 'edit_page', $post_id ) ) {
 		return $post_id;
 	}
-	
+
 	$sptDataOrig = array();
 	$sptDataOrig = unserialize(get_post_meta($post_id, 'sptData', true));
-	
+
 	$sptDataNew = array();
 	$sptDataNew = sptFilterData($_POST['sptData']);
-	
+
 	$sptData = $sptDataNew;
-	
+
 	$sptData['master_id'] = $sptDataOrig['master_id'];
 	$sptData['slave_id'] = $sptDataOrig['slave_id'];
 
@@ -490,12 +490,12 @@ function sptSavePost($post_id) {
 
 	/* Update the link data */
 	update_post_meta($post_id, 'sptData', serialize($sptData));
-	
+
 }
 
 /*******************************************************************************
 ** sptRecordVisit
-** Record the visit to the page if required. Uses global post data to determine 
+** Record the visit to the page if required. Uses global post data to determine
 ** the page to record.
 ** @param $sptID - the ID of the split test
 ** @param $sptData - the data of the split test
@@ -521,16 +521,16 @@ function sptRecordVisit($sptID, $sptData) {
 
 	// Record the visit, but only if all preconditions are satisfied
 	if ($recordTheVisit) {
-		
+
 		if ($sptData['master_id'] == $post->ID) $masterOrSlave = $sptData['master_id'] . '_visits';
 		if ($sptData['slave_id'] == $post->ID) $masterOrSlave = $sptData['slave_id'] . '_visits';
-		
+
 		$sptData[$masterOrSlave][] = array(
 			'timestamp' => current_time('timestamp'),
 			'ip' => getenv(REMOTE_ADDR)
 		);
-		
-		// If we are forcing users to view the same page, record the page so we know 
+
+		// If we are forcing users to view the same page, record the page so we know
 		// not to record future visits
 		if (isset($sptData['force_same']) && $sptData['force_same'] == 'on') {
 			$_SESSION['spt_force_same_' . $sptID] = $post->ID;
@@ -548,26 +548,26 @@ function sptRecordVisit($sptID, $sptData) {
 function sptRedirect() {
 	session_start();
 	global $post;
-	
+
 	// Check if this is the first redirect and if so record the visit
 	if (isset($_SESSION['spt_redirect']) && $_SESSION['spt_redirect'] == true) {
 		// Unset the session variable because we might end up visiting again
 		unset($_SESSION['spt_redirect']);
-		
+
 		// Get the split test ID and exit if it's not valid
 		$sptID = get_post_meta($post->ID, 'sptID', true);
 		if ($sptID == null || empty($sptID) || !is_numeric($sptID) || $sptID == '0')
 			return;
-	
+
 		// Retrieve the split test data and exit if it's not a valid test
 		$sptData = unserialize(get_post_meta($sptID, 'sptData', true));
 		if ($sptData == null || empty($sptData))
 			return;
-			
+
 		sptRecordVisit($sptID, $sptData);
 
 		do_action('spt_after_redirect', $sptID);
-		
+
 		// Exit here so we don't end up redirecting again
 		return;
 	} else {
@@ -575,22 +575,22 @@ function sptRedirect() {
 		$sptID = get_post_meta($post->ID, 'sptID', true);
 		if ($sptID == null || empty($sptID) || !is_numeric($sptID) || $sptID == '0')
 			return;
-	
+
 		// Retrieve the split test data and exit if it's not a valid test
 		$sptData = unserialize(get_post_meta($sptID, 'sptData', true));
 		if ($sptData == null || empty($sptData))
 			return;
-		
+
 		// Determine which page to redirect to
 		list($usec, $sec) = explode(' ', microtime());
 		mt_srand((float)$sec + ((float)$usec * 100000));
 		$randNum = mt_rand(1, 100);
-	
+
 		if ($randNum <= $sptData['master_weight'])
 			$pageID = $sptData['master_id'];
 		else
 			$pageID = $sptData['slave_id'];
-		
+
 		// Set the session variable to indicate that they user is being redirected
 		// so we don't end up redirecting them in an infinite loop!
 		$_SESSION['spt_redirect'] = true;
@@ -609,19 +609,22 @@ function sptRedirect() {
 		if (isset($sptData['force_same']) && $sptData['force_same'] == 'on' &&
 			isset($_SESSION['spt_force_same_' . $sptID]) && !empty($_SESSION['spt_force_same_' . $sptID])) {
 			sptRecordVisit($sptID, $sptData);
+
+			// 1.2.1: Add hook for after action has been taken (in this case, no redirect)
+			do_action('spt_after_force_same_no_redirect', $sptID);
 			return;
 		}
 
-		// Get the URL for the selected landing page 
+		// Get the URL for the selected landing page
 		$redirectURL = get_permalink($pageID);
-		
+
 		// Get query vars from the current URL and pass them to the selected landing page
 		$redirectURL = add_query_arg($_GET, $redirectURL);
-		
+
 		// Perform the redirect to the desired split page
 		wp_redirect($redirectURL, 302);
-		
-		// Stop any PHP from executing after the redirect	
+
+		// Stop any PHP from executing after the redirect
 		exit();
 	}
 }
@@ -633,14 +636,14 @@ function sptRedirect() {
 *******************************************************************************/
 function sptTestDeleted() {
 	global $post;
-	
+
 	if ($post && $post->post_type == 'spt') {
 		$sptData = unserialize(get_post_meta($post->ID, 'sptData', true));
-		
+
 		// Delete the key for this test from the pages that were being tested
 		delete_post_meta($sptData['master_id'], 'sptID');
 		delete_post_meta($sptData['slave_id'], 'sptID');
-		
+
 		wp_delete_post($post->ID, true);
 	}
 }
@@ -652,13 +655,13 @@ function sptTestDeleted() {
 *******************************************************************************/
 function sptRemoveItemsFromEditList($actions, $post) {
 	global $current_screen;
-	
+
 	if ($post->post_type != 'spt')
 		return $actions;
-	
+
 	unset($actions['view']);
 	unset($actions['inline hide-if-no-js']);
-	
+
 	return $actions;
 }
 
@@ -677,10 +680,10 @@ function sptHideAddNewFromEditPage() {
     	.tablenav{display:none;}
     	</style>';
     }
-    
+
     // Now also remove split test from the admin bar
     echo '<style type="text/css">
-    
+
     </style>';
 }
 
@@ -691,7 +694,7 @@ function sptHideAddNewFromEditPage() {
 *******************************************************************************/
 function sptHideAddNewFromAdminBar() {
     global $wp_admin_bar;
-    
+
     // Remove New SPT from the admin menu bar
     $wp_admin_bar->remove_menu('new-spt');
 }
@@ -713,22 +716,22 @@ function sptRemoveAddNew() {
 *******************************************************************************/
 function sptAdminHeader() {
 	global $post;
-	
+
 	if ($post)
 		$sptID = get_post_meta($post->ID, 'sptID', true);
-	
-	if (($post && $post->post_type == 'spt')  || 
+
+	if (($post && $post->post_type == 'spt')  ||
 		(!empty($sptID) && is_numeric($sptID) && $sptID != '0')) {
 		wp_enqueue_script('jquery-ui');
 		wp_enqueue_script('sptHelper', plugins_url('simple-page-tester/js/sptHelper.js'), true);
 		wp_enqueue_style('sptStylesheet', plugins_url('simple-page-tester/css/spt.css'));
-		
+
 		echo '<script type="text/javascript">
 		var sptPluginDir = \'' . plugins_url('simple-page-tester/') . '\';
 		var sptAdminUrl = \'' . admin_url() . '\';
 		</script>';
 	}
-	
+
 	wp_enqueue_script('thickbox', true);
 	wp_enqueue_style('thickbox');
 }
@@ -740,21 +743,21 @@ function sptAdminHeader() {
 *******************************************************************************/
 function sptSetupCanonicalTag() {
 	global $post;
-	
+
 	$sptID = get_post_meta($post->ID, 'sptID', true);
-	
+
 	if ($sptID == null || empty($sptID) || !is_numeric($sptID) || $sptID == '0')
 		return;
-	
+
 	$sptData = unserialize(get_post_meta($sptID, 'sptData', true));
 	if ($sptData == null || empty($sptData))
 		return;
-	
+
 	if ($sptData['slave_id'] == $post->ID)
 		echo '<link rel="canonical" href="' . get_permalink($sptData['master_id']) . '" />';
 }
 
-/******************************************************************************* 
+/*******************************************************************************
 ** sptGetThickboxContent
 ** Get the link picker thickbox content
 ** @since 1.1
@@ -796,28 +799,28 @@ do_action('admin_head');
 			var sptAdminUrl = "<?php echo admin_url(); ?>";
 			var sptAjaxUrl = "<?php echo admin_url(); ?>admin-ajax.php";
 		</script>
-		
+
 		<div id="options_1" class="spt_center">
 			<h2>Creating A New Split Test</h2>
-			<p>You've chosen the <em><u>Master</u></em> page, 
+			<p>You've chosen the <em><u>Master</u></em> page,
 				now we need figure out what to do for the <em><u>Variation</u></em>.</p>
 			<p>There's three options, what would you like to do?</p>
-			
+
 			<p style="margin-top: 20px;"><a id="duplicate_page" class="button" href="#">Duplicate Master Page</a>&nbsp;&nbsp;
 			<a id="choose_existing" class="button" href="#">Choose An Existing Page</a>&nbsp;&nbsp;
 			<a id="create_blank" class="button" href="#">Create A New Blank Page</a></p>
-			
+
 		</div>
-		
+
 		<div id="options_duplicate_page" class="spt_center" style="display: none;">
 			<p class="action">Duplicating current page...</p>
 			<p class="action">Setting up new split test...</p>
 			<p class="action">Redirecting...</p>
 			<p class="back_button"><span class="spt_back button">&laquo; Back</span></p>
 		</div>
-		
+
 		<div id="options_choose_existing" class="spt_center" style="display: none;">
-			<h2>Choose An Existing Page</h2>			
+			<h2>Choose An Existing Page</h2>
 			<div id="spt_search_panel">
 				<div class="spt_search_wrapper">
 					<label>
@@ -829,15 +832,15 @@ do_action('admin_head');
 					<ul><li>No search term specified.</li></ul>
 				</div>
 			</div>
-			
+
 			<p class="action">Setting up new split test...</p>
 			<p class="action">Redirecting...</p>
-			
+
 			<p class="back_button"><span class="spt_back button">&laquo; Back</span></p>
 		</div>
-		
+
 		<div id="options_create_blank" class="spt_center" style="display: none;">
-			
+
 			<p class="action">Creating new blank page...</p>
 			<p class="action">Setting up new split test...</p>
 			<p class="action">Redirecting...</p>
@@ -847,7 +850,7 @@ do_action('admin_head');
 		<div id="sptBackupNotice">
 			<p>We suggest backing up your website prior to starting a split test. For more information on why, please see <a href="http://simplepagetester.com/articles/backup-your-site-before-split-test/?utm_source=Free%20Plugin&utm_medium=New%20Test%20Dialog&utm_campaign=Backup%20Article" target="_blank">this article on our website</a>.
 		</div>
-		
+
 	</div>
 </body>
 </html>
@@ -855,7 +858,7 @@ do_action('admin_head');
 	exit();
 }
 
-/******************************************************************************* 
+/*******************************************************************************
 ** sptDuplicateCurrentPost
 ** Ajax function to include duplication functionality
 ** @since 1.0.3
@@ -865,7 +868,7 @@ function sptDuplicateCurrentPost() {
 	exit();
 }
 
-/******************************************************************************* 
+/*******************************************************************************
 ** sptCreateNewPage
 ** Ajax function to include new page creation functionality
 ** @since 1.0.3
@@ -875,7 +878,7 @@ function sptCreateNewPage() {
 	exit();
 }
 
-/******************************************************************************* 
+/*******************************************************************************
 ** sptReplaceSearchResults
 ** Ajax function to include search results functionality
 ** @since 1.0.3
@@ -885,7 +888,7 @@ function sptReplaceSearchResults() {
 	exit();
 }
 
-/******************************************************************************* 
+/*******************************************************************************
 ** sptCreateSptPost
 ** Ajax function to include Split Test post creation functionality
 ** @since 1.0.3
@@ -895,7 +898,7 @@ function sptCreateSptPost() {
 	exit();
 }
 
-/******************************************************************************* 
+/*******************************************************************************
 ** sptDeclareWinner
 ** Ajax function to include delaration functionality
 ** @since 1.0.3
@@ -905,7 +908,7 @@ function sptDeclareWinner() {
 	exit();
 }
 
-/******************************************************************************* 
+/*******************************************************************************
 ** sptFilterData
 ** Filter all the data for nasty surprises
 ** @since 1.1.1
@@ -918,11 +921,11 @@ function sptFilterData($data) {
 	} else {
 		if (empty($data))
 			return $data;
-		
+
 		$data = nl2br(trim(htmlspecialchars(wp_kses_post($data), ENT_COMPAT)));
 		$breaks = array("\r\n", "\n", "\r");
 		$data = str_replace($breaks, "", $data);
-		
+
 		if (get_magic_quotes_gpc())
 			$data = stripslashes($data);
 		$data = mysql_real_escape_string($data);
@@ -960,19 +963,19 @@ function sptNewPageSplitTest() {
 
 	echo '<h2>Page Split Test Setup</h2>';
 
-	echo '<p>1. To setup a new page split test, you need to navigate to the edit 
-	screen for your master page and click on the Setup Split Test button which you will 
+	echo '<p>1. To setup a new page split test, you need to navigate to the edit
+	screen for your master page and click on the Setup Split Test button which you will
 	find on the bottom right of the page.</p>';
 
 	echo '<img src="' . plugins_url('simple-page-tester/images/add-new-1.jpg') . '" alt="Setup Split Test" />';
 
-	echo '<p>2. Once you have clicked the button you will be presented with a dialog box 
-	to determine what to do for the Variation. Choose the option you would like and 
+	echo '<p>2. Once you have clicked the button you will be presented with a dialog box
+	to determine what to do for the Variation. Choose the option you would like and
 	Simple Page Tester will add the Variation for the test.</p>';
 
 	echo '<img src="' . plugins_url('simple-page-tester/images/add-new-2.jpg') . '" alt="Variation Dialog Box" />';
 
-	echo '<p>3. After you have picked your Variation option and the Variation has been added 
+	echo '<p>3. After you have picked your Variation option and the Variation has been added
 	to the test you need to edit the Variation. Note that the test is now active.</p>';
 
 	echo '<p>Goto the listing screen for the post type you wish to test: <br /><br />';
@@ -984,7 +987,7 @@ function sptNewPageSplitTest() {
 	echo '</div><!-- .wrap -->';
 }
 
-/******************************************************************************* 
+/*******************************************************************************
 ** sptAddStatsResetButtons
 ** Present a button to reset the stats on the options sidebar meta
 ** @since 1.2
@@ -996,7 +999,7 @@ function sptAddStatsResetButtons() {
 	<em>Note: this can\'t be undone.</em></p>';
 }
 
-/******************************************************************************* 
+/*******************************************************************************
 ** sptAddCustomColumns
 ** Add custom columns to the list page (type, stats, etc)
 ** @since 1.2
@@ -1011,7 +1014,7 @@ function sptAddCustomColumns($columns) {
     return $columns;
 }
 
-/******************************************************************************* 
+/*******************************************************************************
 ** sptAddCustomColumnsContent
 ** Add custom columns content to the list page (type, stats, etc)
 ** @since 1.2
@@ -1044,7 +1047,7 @@ function sptAddCustomColumnsContent($column, $post_id) {
 				} else {
 					$html .= '<strong>Master:</strong> No stats yet!<br />';
 				}
-				
+
 				if ($variation['visits'] > 0) {
 					$html .= '<strong>Variation:</strong> ' . count($sptData[$sptData['slave_id'] . '_visits']) . ' visits';
 					$html .= '<br />';
@@ -1060,7 +1063,7 @@ function sptAddCustomColumnsContent($column, $post_id) {
 	}
 }
 
-/******************************************************************************* 
+/*******************************************************************************
 ** sptActivation
 ** On activation add flush flag which gets removed after flushing the rules once
 ** @since 1.0
@@ -1069,7 +1072,7 @@ function sptActivation() {
     add_option('spt_flush', 'true');
 }
 
-/******************************************************************************* 
+/*******************************************************************************
 ** sptDeactivation
 ** On deactivation remove flush flag
 ** @since 1.0
@@ -1078,27 +1081,27 @@ function sptDeactivation() {
     delete_option('spt_flush');
 }
 
-/******************************************************************************* 
+/*******************************************************************************
 ** sptInit
 ** Plugin initialization
 ** @since 1.0
 *******************************************************************************/
-function sptInit() {	
+function sptInit() {
 	/* Register the SPT post type */
 	sptRegisterPostType();
-	
+
 	/* Add meta boxes to edit screen */
 	add_action('add_meta_boxes', 'sptMetaBoxes');
-	
+
 	/* Save meta information for test */
 	add_action('save_post', 'sptSavePost');
-	
+
 	/* Control redirection */
 	add_action('template_redirect', 'sptRedirect');
-	
+
 	/* Setup hook to catch split tests before they are deleted */
 	add_action('trashed_post', 'sptTestDeleted');
-	
+
 	/* Setup canonical tag for secondary page */
 	add_action('wp_head', 'sptSetupCanonicalTag');
 
@@ -1119,7 +1122,7 @@ function sptInit() {
 
 }
 
-/******************************************************************************* 
+/*******************************************************************************
 ** sptAdminInit
 ** Plugin admin initialization
 ** @since 1.0
@@ -1127,10 +1130,10 @@ function sptInit() {
 function sptAdminInit() {
 	/* Add necessary javascript for the admin page */
 	add_action('admin_head', 'sptAdminHeader');
-	
+
 	/* Remove view from quick edit options on spt post type */
 	add_filter('page_row_actions', 'sptRemoveItemsFromEditList', 10, 2);
-		
+
 	/* Get rid of add new action at top of edit screens for SPT post type */
 	add_action('admin_head', 'sptHideAddNewFromEditPage');
 }
@@ -1151,4 +1154,3 @@ add_action('wp_before_admin_bar_render', 'sptHideAddNewFromAdminBar');
 
 /* Include the stats helper functions */
 require_once('StatsHelperFunctions.php');
-

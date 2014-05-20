@@ -3,7 +3,7 @@ Contributors: jkohlbach, RymeraWebCo
 Donate link: 
 Tags: split testing, split tester, split test, a/b testing, a/b tester, a/b test, a/b split tester, simple page tester, simplepagetester, page tester, split test pages
 Requires at least: 3.4
-Tested up to: 3.8
+Tested up to: 3.9
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -68,6 +68,9 @@ For a list of frequently asked questions and more [see our knowledge base](http:
 3. The split test details screen shows view stats in the free version and conversion details in the Premium version ([read about even more features in the Premium version](http://simplepagetester.com/premium/))
 
 == Changelog ==
+
+= 1.2.1 =
+* Feature: Adding hook after non-redirect situations on redirection routine
 
 = 1.2 =
 * Bug Fix: Force same should store session data relative to split test ID to cover cases where multiple tests are being run
