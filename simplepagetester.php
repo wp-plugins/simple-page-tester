@@ -7,7 +7,7 @@
 * Author: Simple Page Tester
 * Author URI: http://www.simplepagetester.com
 * Plugin URI: http://simplepagetester.com
-* Version: 1.2.1
+* Version: 1.2.2
 */
 
 /*******************************************************************************
@@ -928,7 +928,7 @@ function sptFilterData($data) {
 
 		if (get_magic_quotes_gpc())
 			$data = stripslashes($data);
-		$data = mysql_real_escape_string($data);
+		$data = esc_sql($data);
 	}
     return $data;
 }

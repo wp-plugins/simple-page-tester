@@ -1,6 +1,6 @@
 === Simple Page Tester ===
 Contributors: jkohlbach, RymeraWebCo
-Donate link: 
+Donate link:
 Tags: split testing, split tester, split test, a/b testing, a/b tester, a/b test, a/b split tester, simple page tester, simplepagetester, page tester, split test pages
 Requires at least: 3.4
 Tested up to: 3.9
@@ -63,11 +63,14 @@ For a list of frequently asked questions and more [see our knowledge base](http:
 
 1. Starting a split test is easy, just click Setup New Split Test
 
-2. Dialog for choosing what to do with the Variation. Duplicate the page, Choose and existing page or start a new page 
+2. Dialog for choosing what to do with the Variation. Duplicate the page, Choose and existing page or start a new page
 
 3. The split test details screen shows view stats in the free version and conversion details in the Premium version ([read about even more features in the Premium version](http://simplepagetester.com/premium/))
 
 == Changelog ==
+
+= 1.2.2 =
+* Bug Fix: Fixing old reference to mysql filtering function, switched to using internal WP function esc_sql as it was causing issues on some server setups
 
 = 1.2.1 =
 * Feature: Adding hook after non-redirect situations on redirection routine
