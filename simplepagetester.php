@@ -7,7 +7,7 @@
 * Author: Simple Page Tester
 * Author URI: http://www.simplepagetester.com
 * Plugin URI: http://simplepagetester.com
-* Version: 1.2.2
+* Version: 1.2.3
 */
 
 /*******************************************************************************
@@ -1005,7 +1005,7 @@ function sptAddStatsResetButtons() {
 ** @since 1.2
 *******************************************************************************/
 function sptAddCustomColumns($columns) {
-	echo '<pre>DEBUG: ' . print_r($columns, true) . '</pre>';
+	//echo '<pre>DEBUG: ' . print_r($columns, true) . '</pre>';
     unset($columns['date']);
     $columns['title'] = 'Test Name';
     $columns['sptTestType'] = 'Test Type';

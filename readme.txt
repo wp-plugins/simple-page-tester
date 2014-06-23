@@ -69,6 +69,9 @@ For a list of frequently asked questions and more [see our knowledge base](http:
 
 == Changelog ==
 
+= 1.2.3 =
+* Bug Fix: Removing debug trace accidentally left in from previous version
+
 = 1.2.2 =
 * Bug Fix: Fixing old reference to mysql filtering function, switched to using internal WP function esc_sql as it was causing issues on some server setups
 
