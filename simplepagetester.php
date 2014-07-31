@@ -7,7 +7,7 @@
 * Author: Simple Page Tester
 * Author URI: http://www.simplepagetester.com
 * Plugin URI: http://simplepagetester.com
-* Version: 1.2.3
+* Version: 1.2.4
 */
 
 /*******************************************************************************
@@ -173,6 +173,8 @@ function sptSidePremiumUpsellMetaBox() {
 ** @since 1.0
 *******************************************************************************/
 function sptNameMeta() {
+	global $post;
+
 	wp_nonce_field( plugin_basename(__FILE__), 'spt_noncename' );
 
 	/* Make sure we only do this for regular saves and we have permission */
@@ -181,7 +183,6 @@ function sptNameMeta() {
 		return $post->ID;
 	}
 
-	global $post;
 	$sptData = unserialize(get_post_meta($post->ID, 'sptData', true));
 	echo '<p><label class="infolabel" for="post_title">Split Test Name:</label></p>';
 	echo '<p><input id="test_name" name="post_title" value="' . $post->post_title . '" size="50" type="text" /><br />
@@ -385,7 +386,7 @@ function sptSideOptionsMeta() {
 	if (isset($sptData['force_same']) && $sptData['force_same'] == 'on') $sptData['force_same'] = ' checked="checked"';
 
 	// Core options
-	echo '<input type="checkbox" name="sptData[force_same]" id="sptForceSame"' .  $sptData['force_same'] . ' /> <label for="sptForceSame">Force Users To View The Same Variation During A Browsing Session</label>';
+	echo '<input type="checkbox" name="sptData[force_same]" id="sptForceSame"' .  (isset($sptData['force_same']) ? $sptData['force_same'] : '') . ' /> <label for="sptForceSame">Force Users To View The Same Variation During A Browsing Session</label>';
 
 	// Hook so others can add their own options
 	do_action('spt_after_side_options');
@@ -548,6 +549,10 @@ function sptRecordVisit($sptID, $sptData) {
 function sptRedirect() {
 	session_start();
 	global $post;
+
+	// 1.2.4: double check we're on a single page
+	if (!is_single() && !is_page())
+		return;
 
 	// Check if this is the first redirect and if so record the visit
 	if (isset($_SESSION['spt_redirect']) && $_SESSION['spt_redirect'] == true) {

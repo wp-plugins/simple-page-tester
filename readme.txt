@@ -69,6 +69,11 @@ For a list of frequently asked questions and more [see our knowledge base](http:
 
 == Changelog ==
 
+= 1.2.4 =
+* Bug Fix: Fixing php notice on force same option on back end
+* Bug Fix: Fixing $post undefined notice on test edit screen
+* Bug Fix: Redirection should only happen on non-archive pages (thanks Lindsey)
+
 = 1.2.3 =
 * Bug Fix: Removing debug trace accidentally left in from previous version
 
