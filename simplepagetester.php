@@ -7,7 +7,7 @@
 * Author: Simple Page Tester
 * Author URI: http://www.simplepagetester.com
 * Plugin URI: http://simplepagetester.com
-* Version: 1.2.4
+* Version: 1.2.5
 */
 
 /*******************************************************************************
@@ -1069,6 +1069,51 @@ function sptAddCustomColumnsContent($column, $post_id) {
 }
 
 /*******************************************************************************
+** sptRemoveVariationsFromLoop
+** If we're on the front end, hide 'post' variations involved in split tests
+** @since 1.2.5
+*******************************************************************************/
+function sptRemoveVariationsFromLoop($query) {
+
+	/* Bail if we're on the admin, don't want to hide variations there
+	** Bail if it's not the main query
+	** Bail if it's a single post (of any type)
+	** Bail if it's a single page */
+	if (is_admin() || !$query->is_main_query() || is_single() || is_page())
+		return;
+
+	// If we're on the front end, hide 'post' variations involved in split tests
+	$splitTests = get_posts(array(
+		'post_type' => 'spt',
+		'posts_per_page' => -1
+	));
+
+	$excludeArray = array();
+	if ($splitTests) {
+		foreach ($splitTests as $splitTest) {
+			$sptData = unserialize(get_post_meta($splitTest->ID, 'sptData', true));
+
+			// Find out if this is a standard split test
+			if (!isset($sptData['splitTestType']) ||
+				empty($sptData['splitTestType']) ||
+				$sptData['splitTestType'] == 'page') {
+
+				// Get the variation ID
+				$variationID = $sptData['slave_id'];
+
+				// Exclude variation from loops
+				$excludeArray[] = $variationID;
+
+			} else {
+				// not a 'page' split test, so don't worry about it
+			}
+		}
+	}
+
+	$query->set('post__not_in', $excludeArray);
+}
+
+/*******************************************************************************
 ** sptActivation
 ** On activation add flush flag which gets removed after flushing the rules once
 ** @since 1.0
@@ -1124,6 +1169,9 @@ function sptInit() {
 	// Add stuff to list page
 	add_filter('manage_spt_posts_columns', 'sptAddCustomColumns', 10, 1);
 	add_action('manage_spt_posts_custom_column', 'sptAddCustomColumnsContent', 10, 2);
+
+	// Remove variations from the loop
+	add_action('pre_get_posts', 'sptRemoveVariationsFromLoop');
 
 }
 

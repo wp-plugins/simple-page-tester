@@ -69,6 +69,9 @@ For a list of frequently asked questions and more [see our knowledge base](http:
 
 == Changelog ==
 
+= 1.2.5 =
+* Bug Fix: Exclude 'post' posts from the loop if they are involved in a test
+
 = 1.2.4 =
 * Bug Fix: Fixing php notice on force same option on back end
 * Bug Fix: Fixing $post undefined notice on test edit screen
