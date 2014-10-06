@@ -7,7 +7,7 @@
 * Author: Simple Page Tester
 * Author URI: http://www.simplepagetester.com
 * Plugin URI: http://simplepagetester.com
-* Version: 1.2.5
+* Version: 1.3
 */
 
 /*******************************************************************************
@@ -503,7 +503,7 @@ function sptSavePost($post_id) {
 ** @since 1.1.3
 *******************************************************************************/
 function sptRecordVisit($sptID, $sptData) {
-	session_start();
+	global $sptSession;
 	global $post;
 
 	// If in doubt, record the visit, next we'll test some conditions where it shouldn't recorded
@@ -515,8 +515,10 @@ function sptRecordVisit($sptID, $sptData) {
 	}*/
 
 	// Check if we should record the visit if we're forcing visitors to view the same page
+	$sessionForceSame = $sptSession->getData('spt_force_same_' . $sptID);
+
 	if (isset($sptData['force_same']) && $sptData['force_same'] == 'on' &&
-		isset($_SESSION['spt_force_same_' . $sptID]) && !empty($_SESSION['spt_force_same_' . $sptID])) {
+		isset($sessionForceSame) && !empty($sessionForceSame)) {
 		$recordTheVisit = false;
 	}
 
@@ -534,7 +536,7 @@ function sptRecordVisit($sptID, $sptData) {
 		// If we are forcing users to view the same page, record the page so we know
 		// not to record future visits
 		if (isset($sptData['force_same']) && $sptData['force_same'] == 'on') {
-			$_SESSION['spt_force_same_' . $sptID] = $post->ID;
+			$sptSession->setData('spt_force_same_' . $sptID, $post->ID);
 		}
 
 		update_post_meta($sptID, 'sptData', serialize($sptData));
@@ -547,7 +549,7 @@ function sptRecordVisit($sptID, $sptData) {
 ** @since 1.0
 *******************************************************************************/
 function sptRedirect() {
-	session_start();
+	global $sptSession;
 	global $post;
 
 	// 1.2.4: double check we're on a single page
@@ -555,9 +557,10 @@ function sptRedirect() {
 		return;
 
 	// Check if this is the first redirect and if so record the visit
-	if (isset($_SESSION['spt_redirect']) && $_SESSION['spt_redirect'] == true) {
+	$sessionRedirect = $sptSession->getData('spt_redirect');
+	if (isset($sessionRedirect) && $sessionRedirect == true) {
 		// Unset the session variable because we might end up visiting again
-		unset($_SESSION['spt_redirect']);
+		$sptSession->unsetData('spt_redirect');
 
 		// Get the split test ID and exit if it's not valid
 		$sptID = get_post_meta($post->ID, 'sptID', true);
@@ -572,7 +575,6 @@ function sptRedirect() {
 		sptRecordVisit($sptID, $sptData);
 
 		do_action('spt_after_redirect', $sptID);
-
 		// Exit here so we don't end up redirecting again
 		return;
 	} else {
@@ -598,21 +600,23 @@ function sptRedirect() {
 
 		// Set the session variable to indicate that they user is being redirected
 		// so we don't end up redirecting them in an infinite loop!
-		$_SESSION['spt_redirect'] = true;
+		$sptSession->setData('spt_redirect', true);
 
 		// Set the session variable to record which variation this user saw
-		if (!isset($_SESSION['spt_page' . $sptID])) {
-			$_SESSION['spt_page' . $sptID] = $pageID;
+		$sessionPageSeen = $sptSession->getData('spt_page' . $sptID);
+		if (!isset($sessionPageSeen) && !empty($sessionPageSeen)) {
+			$sptSession->setData('spt_page' . $sptID, $pageID);
 		} else {
 			// Check if the global setting for forcing user to see the same variation again is off
 			if (isset($sptData['force_same']) && $sptData['force_same'] == 'on') {
-				$pageID = $_SESSION['spt_page' . $sptID];
+				$pageID = $sptSession->getData('spt_page' . $sptID);
 			}
 		}
 
 		// Check if we should bother redirecting, if we're forcing visitors to view the same page there is no need
+		$sessionForceSame = $sptSession->getData('spt_force_same_' . $sptID);
 		if (isset($sptData['force_same']) && $sptData['force_same'] == 'on' &&
-			isset($_SESSION['spt_force_same_' . $sptID]) && !empty($_SESSION['spt_force_same_' . $sptID])) {
+			isset($sessionForceSame) && !empty($sessionForceSame)) {
 			sptRecordVisit($sptID, $sptData);
 
 			// 1.2.1: Add hook for after action has been taken (in this case, no redirect)
@@ -1088,7 +1092,28 @@ function sptRemoveVariationsFromLoop($query) {
 		'posts_per_page' => -1
 	));
 
-	$excludeArray = array();
+	$excludeArray = sptGetSplitTestVariationIDs();
+
+	$query->set('post__not_in', $excludeArray);
+}
+
+/*******************************************************************************
+** sptGetSplitTestVariationIDs
+** A function to retrieve an array of IDs to posts involved in split tests.
+** Originally designed for setting the post__not_in value in loop arguments.
+** NOTE: if there is a lot of tests running, this would be expensive. Typically
+** there is only a few running on a system at any one time so it's not a problem.
+** @return array list of variation post ID
+** @since 1.2.6
+*******************************************************************************/
+function sptGetSplitTestVariationIDs() {
+	// If we're on the front end, hide 'post' variations involved in split tests
+	$splitTests = get_posts(array(
+		'post_type' => 'spt',
+		'posts_per_page' => -1
+	));
+
+	$variationIDs = array();
 	if ($splitTests) {
 		foreach ($splitTests as $splitTest) {
 			$sptData = unserialize(get_post_meta($splitTest->ID, 'sptData', true));
@@ -1102,7 +1127,7 @@ function sptRemoveVariationsFromLoop($query) {
 				$variationID = $sptData['slave_id'];
 
 				// Exclude variation from loops
-				$excludeArray[] = $variationID;
+				$variationIDs[] = $variationID;
 
 			} else {
 				// not a 'page' split test, so don't worry about it
@@ -1110,7 +1135,7 @@ function sptRemoveVariationsFromLoop($query) {
 		}
 	}
 
-	$query->set('post__not_in', $excludeArray);
+	return $variationIDs;
 }
 
 /*******************************************************************************
@@ -1139,6 +1164,9 @@ function sptDeactivation() {
 function sptInit() {
 	/* Register the SPT post type */
 	sptRegisterPostType();
+
+	/* Fire up the SPT session handler */
+	require_once('SPTSessionHandler.php');
 
 	/* Add meta boxes to edit screen */
 	add_action('add_meta_boxes', 'sptMetaBoxes');
@@ -1195,6 +1223,7 @@ function sptAdminInit() {
 register_activation_hook(__FILE__, 'sptActivation');
 register_deactivation_hook(__FILE__, 'sptDeactivation');
 
+/* Initialise */
 add_action('init', 'sptInit');
 add_action('admin_init', 'sptAdminInit');
 

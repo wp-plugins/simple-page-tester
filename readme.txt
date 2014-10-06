@@ -69,6 +69,13 @@ For a list of frequently asked questions and more [see our knowledge base](http:
 
 == Changelog ==
 
+= 1.3 =
+* Feature: Introduced a new session handler to allow us greater flexibility in support different types of handlers for tracking visitors
+* Feature: Compatibility with the WP Session Manager plugin to allow for hosts that don't support native PHP sessions (like WP Engine)
+
+= 1.2.6 =
+* Feature: Provide callable function for retrieving variation IDs in an array for exclusion in the template loops
+
 = 1.2.5 =
 * Bug Fix: Exclude 'post' posts from the loop if they are involved in a test
 
