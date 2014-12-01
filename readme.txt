@@ -69,6 +69,9 @@ For a list of frequently asked questions and more [see our knowledge base](http:
 
 == Changelog ==
 
+= 1.3.3 =
+* Bugfix: Fixing more logic conditional problems with force same there uncovered by the previous fix (thanks Jeong)
+
 = 1.3.2 =
 * Bugfix: Fixing logic error in force same functionality which could see the same variation being shown to all users in some cases
 

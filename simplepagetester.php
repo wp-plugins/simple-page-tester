@@ -7,7 +7,7 @@
 * Author: Simple Page Tester
 * Author URI: http://www.simplepagetester.com
 * Plugin URI: http://simplepagetester.com
-* Version: 1.3.2
+* Version: 1.3.3
 */
 
 /*******************************************************************************
@@ -593,37 +593,42 @@ function sptRedirect() {
 		else
 			$pageID = $sptData['slave_id'];
 
-		// Set the session variable to indicate that they user is being redirected
-		// so we don't end up redirecting them in an infinite loop!
-		$sptSession->setData('spt_redirect', true);
+		/* Set the session variable to record which variation this user saw.
+		** If the test setting for forcing the user to see the same variation is
+		** then we need to force the page ID to be the same as it was before.
+		** If it's the first time it's seeing the page, then let it randomise.
+		** Likewise, if the force same setting is OFF then we should let it
+		** randomise.
+		*/
+		if (isset($sptData['force_same']) && $sptData['force_same'] == 'on') {
+			// 1.3.2: get the same ID as before if it's been set, if not let it randomize selection on the first time round
+			$sameID = $sptSession->getData('spt_force_same_' . $sptID);
 
-		// Set the session variable to record which variation this user saw
-		$sessionPageSeen = $sptSession->getData('spt_page' . $sptID);
-
-		if (!isset($sessionPageSeen) && !empty($sessionPageSeen)) {
-			$sptSession->setData('spt_page' . $sptID, $pageID);
-		} else {
-			// Check if the test setting for forcing the user to see the same variation is on
-			if (isset($sptData['force_same']) && $sptData['force_same'] == 'on') {
-				// 1.3.2: get the same ID as before if it's been set, if not let it randomize selection on the first time round
-				$sameID = $sptSession->getData('spt_force_same_' . $sptID);
-				if (!empty($sameID)) {
-					$pageID = $sameID;
-					$sptSession->setData('spt_page' . $sptID, $pageID);
-				}
+			if (!empty($sameID)) {
+				$pageID = $sameID;
+			} else {
+				$sptSession->getData('spt_force_same_' . $sptID, $pageID);
 			}
 		}
+
+		$sptSession->setData('spt_page' . $sptID, $pageID);
 
 		// Check if we should bother redirecting, if we're forcing visitors to view the same page there is no need
 		$sessionForceSame = $sptSession->getData('spt_force_same_' . $sptID);
 		if (isset($sptData['force_same']) && $sptData['force_same'] == 'on' &&
-			isset($sessionForceSame) && !empty($sessionForceSame)) {
+			isset($sessionForceSame) && !empty($sessionForceSame) &&
+			$sessionForceSame == $post->ID) {
+
 			sptRecordVisit($sptID, $sptData);
 
 			// 1.2.1: Add hook for after action has been taken (in this case, no redirect)
 			do_action('spt_after_force_same_no_redirect', $sptID);
 			return;
 		}
+
+		// Set the session variable to indicate that they user is being redirected
+		// so we don't end up redirecting them in an infinite loop!
+		$sptSession->setData('spt_redirect', true);
 
 		// Get the URL for the selected landing page
 		$redirectURL = get_permalink($pageID);
