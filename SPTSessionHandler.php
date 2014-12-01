@@ -52,10 +52,16 @@ final class SPTSessionHandler {
         }
 
         if ($this->_sessionHandlerType == 'native') {
-            $value = $_SESSION[$key];
+            if (isset($_SESSION[$key]))
+                $value = $_SESSION[$key];
+            else
+                $value = '';
         } else if ($this->_sessionHandlerType == 'wp_session') {
             global $wp_session;
-            $value = $wp_session[$key];
+            if (isset($wp_session[$key]))
+                $value = $wp_session[$key];
+            else
+                $value = '';
         } else {
             error_log('Session handler type was invalid during attempt to get key [' . $key . ']');
             return;

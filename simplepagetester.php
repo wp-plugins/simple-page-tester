@@ -7,7 +7,7 @@
 * Author: Simple Page Tester
 * Author URI: http://www.simplepagetester.com
 * Plugin URI: http://simplepagetester.com
-* Version: 1.3
+* Version: 1.3.2
 */
 
 /*******************************************************************************
@@ -54,11 +54,6 @@ function sptRegisterPostType() {
 			'menu_icon' => plugins_url('simple-page-tester/images/icon-spt.png')
 		)
 	);
-
-	if (get_option('spt_flush') == 'true') {
-        flush_rewrite_rules();
-        delete_option('spt_flush');
-    }
 }
 
 /*******************************************************************************
@@ -259,7 +254,7 @@ function sptDetailsMeta() {
 			</tr>
 			<tr>
 				<th scope="row" colspan="1">Total Unique Visits:</th>
-				<td colspan="2">' . count($sptData[$sptData['master_id'] . '_visits']) . '</td>
+				<td colspan="2">' . (!empty($sptData[$sptData['master_id'] . '_visits']) ? count($sptData[$sptData['master_id'] . '_visits']) : 0) . '</td>
 			</tr>';
 
 	do_action('spt_master_table_content_end', $post->ID, $sptData['master_id']);
@@ -304,7 +299,7 @@ function sptDetailsMeta() {
 			</tr>
 			<tr>
 				<th scope="row" colspan="1">Total Unique Visits:</th>
-				<td colspan="2">' . count($sptData[$sptData['slave_id'] . '_visits']) . '</td>
+				<td colspan="2">' . (!empty($sptData[$sptData['slave_id'] . '_visits']) ? count($sptData[$sptData['slave_id'] . '_visits']) : 0) . '</td>
 			</tr>';
 
 	do_action('spt_variation_table_content_end', $post->ID, $sptData['slave_id']);
@@ -530,7 +525,7 @@ function sptRecordVisit($sptID, $sptData) {
 
 		$sptData[$masterOrSlave][] = array(
 			'timestamp' => current_time('timestamp'),
-			'ip' => getenv(REMOTE_ADDR)
+			'ip' => getenv('REMOTE_ADDR')
 		);
 
 		// If we are forcing users to view the same page, record the page so we know
@@ -604,12 +599,18 @@ function sptRedirect() {
 
 		// Set the session variable to record which variation this user saw
 		$sessionPageSeen = $sptSession->getData('spt_page' . $sptID);
+
 		if (!isset($sessionPageSeen) && !empty($sessionPageSeen)) {
 			$sptSession->setData('spt_page' . $sptID, $pageID);
 		} else {
-			// Check if the global setting for forcing user to see the same variation again is off
+			// Check if the test setting for forcing the user to see the same variation is on
 			if (isset($sptData['force_same']) && $sptData['force_same'] == 'on') {
-				$pageID = $sptSession->getData('spt_page' . $sptID);
+				// 1.3.2: get the same ID as before if it's been set, if not let it randomize selection on the first time round
+				$sameID = $sptSession->getData('spt_force_same_' . $sptID);
+				if (!empty($sameID)) {
+					$pageID = $sameID;
+					$sptSession->setData('spt_page' . $sptID, $pageID);
+				}
 			}
 		}
 
@@ -1140,20 +1141,20 @@ function sptGetSplitTestVariationIDs() {
 
 /*******************************************************************************
 ** sptActivation
-** On activation add flush flag which gets removed after flushing the rules once
+** On activation flush the rewrite rules
 ** @since 1.0
 *******************************************************************************/
 function sptActivation() {
-    add_option('spt_flush', 'true');
+    flush_rewrite_rules(); // 1.3.1: flush rewrite rules on activation
 }
 
 /*******************************************************************************
 ** sptDeactivation
-** On deactivation remove flush flag
+** On deactivation flush the rewrite rules
 ** @since 1.0
 *******************************************************************************/
 function sptDeactivation() {
-    delete_option('spt_flush');
+    flush_rewrite_rules(); // 1.3.1: flush rewrite rules on deactivation
 }
 
 /*******************************************************************************

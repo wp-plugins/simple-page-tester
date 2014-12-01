@@ -69,6 +69,14 @@ For a list of frequently asked questions and more [see our knowledge base](http:
 
 == Changelog ==
 
+= 1.3.2 =
+* Bugfix: Fixing logic error in force same functionality which could see the same variation being shown to all users in some cases
+
+= 1.3.1 =
+* Bugfix: Prevent undefined variable warnings on test edit screen (thanks Baden)
+* Bugfix: Fixing IP address retrieval warning
+* Bugfix: Check chart data exists before printing it
+
 = 1.3 =
 * Feature: Introduced a new session handler to allow us greater flexibility in support different types of handlers for tracking visitors
 * Feature: Compatibility with the WP Session Manager plugin to allow for hosts that don't support native PHP sessions (like WP Engine)
