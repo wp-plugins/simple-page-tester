@@ -3,7 +3,7 @@ Contributors: jkohlbach, RymeraWebCo
 Donate link:
 Tags: split testing, split tester, split test, a/b testing, a/b tester, a/b test, a/b split tester, simple page tester, simplepagetester, page tester, split test pages
 Requires at least: 3.4
-Tested up to: 4.0
+Tested up to: 4.0.1
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -68,6 +68,11 @@ For a list of frequently asked questions and more [see our knowledge base](http:
 3. The split test details screen shows view stats in the free version and conversion details in the Premium version ([read about even more features in the Premium version](http://simplepagetester.com/premium/))
 
 == Changelog ==
+
+= 1.3.4 =
+* Bugfix: Fix formatting on side options panel on test edit screen
+* Feature: Add global notice dismissal function to mark admin notices as properly dismissed
+* Feature: Add notice to inform about automatic WooCommerce tracking in Premium if WooCommerce is installed
 
 = 1.3.3 =
 * Bugfix: Fixing more logic conditional problems with force same there uncovered by the previous fix (thanks Jeong)

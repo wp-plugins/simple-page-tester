@@ -7,7 +7,7 @@
 * Author: Simple Page Tester
 * Author URI: http://www.simplepagetester.com
 * Plugin URI: http://simplepagetester.com
-* Version: 1.3.3
+* Version: 1.3.4
 */
 
 /*******************************************************************************
@@ -31,7 +31,7 @@ function sptRegisterPostType() {
 				'menu_name' => __('Split Tests'),
 				'all_items' => __('All Split Tests')
 			),
-			'description' => 'Simple Page Tester - WordPress page split testing',
+			'description' => 'Simple Page Tester - WordPress A/B split testing',
 			'public' => true,
 			'menu_position' => 20,
 			'hierarchical' => true,
@@ -381,7 +381,7 @@ function sptSideOptionsMeta() {
 	if (isset($sptData['force_same']) && $sptData['force_same'] == 'on') $sptData['force_same'] = ' checked="checked"';
 
 	// Core options
-	echo '<input type="checkbox" name="sptData[force_same]" id="sptForceSame"' .  (isset($sptData['force_same']) ? $sptData['force_same'] : '') . ' /> <label for="sptForceSame">Force Users To View The Same Variation During A Browsing Session</label>';
+	echo '<p><input type="checkbox" name="sptData[force_same]" id="sptForceSame"' .  (isset($sptData['force_same']) ? $sptData['force_same'] : '') . ' /> <label for="sptForceSame">Force Users To View The Same Variation During A Browsing Session</label></p>';
 
 	// Hook so others can add their own options
 	do_action('spt_after_side_options');
@@ -1145,6 +1145,70 @@ function sptGetSplitTestVariationIDs() {
 }
 
 /*******************************************************************************
+** sptWooCommerceTrackingNotice
+** Check to see if WooCommerce plugin is enabled, if so show a notice about our
+** automatic conversion tracking in Premium
+** @since 1.3.4
+*******************************************************************************/
+function sptWooCommerceTrackingNotice() {
+	$woocommerce_plugin_file = 'woocommerce/woocommerce.php';
+	$spt_premium_file = 'simple-page-tester-premium/simple-page-tester-premium.php';
+	$sptOptions = get_option('sptOptions');
+	$showWooCommerceTrackingNotice = !(isset($sptOptions['sptWooCommerceTrackingNotice']) && $sptOptions['sptWooCommerceTrackingNotice'] == false);
+
+	if ($showWooCommerceTrackingNotice &&
+		is_plugin_active($woocommerce_plugin_file) &&
+		!is_plugin_active($spt_premium_file)) {
+		echo '<div id="sptWooCommerceTrackingNotice" class="updated">
+		<p>
+		<a id="sptWooNoticeDismissMsg" href="#" style="float: right;">Dismiss</a>
+		We notice you have Simple Page Tester and WooCommerce installed.<br />Simple Page Tester Premium can automatically track your conversions in WooCommerce.
+		<a href="http://simplepagetester.com/premium/?utm_source=Free%20Plugin&utm_medium=WooCommerceNotice&utm_campaign=Upgrade%20To%20Premium" target="_blank">Click here for more information &rarr;</a>
+		</p>
+		</div>';
+	}
+
+	echo '<script type="text/javascript">
+	jQuery("#sptWooNoticeDismissMsg").click(function(e) {
+		e.preventDefault();
+		var noticeId = jQuery(this).parent().parent().attr("id");
+
+		jQuery.post(
+			ajaxurl,
+			{
+				action: "sptDismissAdminNotice",
+				notice_id: noticeId
+			},
+			function(result) {
+				jQuery("#sptWooCommerceTrackingNotice").fadeOut(400);
+			}
+		);
+	});
+	</script>';
+}
+
+/*******************************************************************************
+** sptDismissAdminNotice
+** Updates the SPT global options with notices that are being dismissed
+** @since 1.3.4
+*******************************************************************************/
+function sptDismissAdminNotice($noticeId) {
+	// Get the notice ID from the AJAX request
+	$noticeId = sptFilterData($_POST['notice_id']);
+
+	// Retrieve the global options
+	$sptOptions = get_option('sptOptions');
+
+	// Add notice and mark dismissed by having it == false
+	$sptOptions[$noticeId] = false;
+
+	// Re-save options
+	update_option('sptOptions', $sptOptions);
+
+	die();
+}
+
+/*******************************************************************************
 ** sptActivation
 ** On activation flush the rewrite rules
 ** @since 1.0
@@ -1223,6 +1287,12 @@ function sptAdminInit() {
 
 	/* Get rid of add new action at top of edit screens for SPT post type */
 	add_action('admin_head', 'sptHideAddNewFromEditPage');
+
+	// Add notice for WooCommerce tracking in Premium
+	add_action('admin_notices', 'sptWooCommerceTrackingNotice');
+
+	// Register Admin AJAX calls
+	add_action('wp_ajax_sptDismissAdminNotice', 'sptDismissAdminNotice');
 }
 
 /* Initialize the plugin */
