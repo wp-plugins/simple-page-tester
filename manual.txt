@@ -63,7 +63,7 @@ Once your split test has been running for a while and you're confident you have 
 
 You can do this either by editing the winning page itself and clicking on Declare Winner button, or you can also do the same by editing the split test and declaring your winning variation from there.
 
-IMPORTANT NOTE: Once you declare a winner, the other revision will be deleted permanently. This is because we are replacing the master page with the winning page.
+IMPORTANT NOTE: Once you declare a winner, the other revision will remain in the system and will replace the Variation's slug unless you selected the option to delete the losing variation after declaring a winner.
 
 For more information on why you should backup before split testing to avoid any mishaps see this article:
 http://simplepagetester.com/articles/backup-your-site-before-split-test/

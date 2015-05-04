@@ -3,7 +3,7 @@ Contributors: jkohlbach, RymeraWebCo
 Donate link:
 Tags: split testing, split tester, split test, a/b testing, a/b tester, a/b test, a/b split tester, simple page tester, simplepagetester, page tester, split test pages
 Requires at least: 3.4
-Tested up to: 4.2
+Tested up to: 4.2.1
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -68,6 +68,16 @@ For a list of frequently asked questions and more [see our knowledge base](http:
 3. The split test details screen shows view stats in the free version and conversion details in the Premium version ([read about even more features in the Premium version](http://simplepagetester.com/premium/))
 
 == Changelog ==
+
+= 1.4.0 =
+* Bugfix: Temporary workaround added to the Thickbox popup to fix a class with the Types plugin. Just until they fix their issue of loading Types JS files on non-required pages.
+* Bugfix: If a visitor visits the test slug, redirect them to the Master
+* Feature: Added a Tour to the plugin which is activated when the plugin is Activated
+* Feature: Added a new metric to show "unique visitors" to in order to better separate view count from unique visitors. Changed existing metric to "total views"
+* Feature: Allow archiving of tests so you can keep both variations after a test finishes. This is now the default behavior. The losing variation will replace the Variation's slug and the winner will replace the Master's slug. It's up to the admin to delete the second page.
+* Feature: Added the ability to "Pause" a test in progress. Paused tests shuffle all traffic to the "Master" and do not record visits or conversions.
+* Feature: Added a column to show the status of a test on the All Split Tests list view
+* Feature: Disable the WordPress SEO meta box on the SPT edit screen automatically without having to adjust the settings in WordPress SEO
 
 = 1.3.4 =
 * Bugfix: Fix formatting on side options panel on test edit screen

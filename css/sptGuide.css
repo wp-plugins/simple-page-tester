@@ -1,0 +1,7 @@
+.spt-tour-buttons {
+    float: right;
+}
+
+.spt-tour-buttons > .button {
+    margin-left: 10px;
+}

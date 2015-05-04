@@ -177,4 +177,83 @@ function sptAjaxGetChartData() {
 add_action('wp_ajax_sptAjaxGetChartData', 'sptAjaxGetChartData');
 add_action('wp_ajax_sptResetAllStats', 'sptResetAllStats');
 
-?>
+/**
+ * Get the unique visitors of a specific test page.
+ *
+ * This function will return an array containing the unique visitors for both
+ * the master and slave pages.
+ *
+ * The array will look like this when printed in JSON format:
+ *
+ * {
+ *     "master": {
+ *         "10.0.2.1": { "count": 1 },
+ *         "10.0.2.2": { "count": 3 },
+ *         "10.0.2.3": { "count": 5 },
+ *         ...
+ *     },
+ *     "slave": {
+ *         "10.0.2.4": { "count": 1 },
+ *         "10.0.2.5": { "count": 1 },
+ *         "10.0.2.6": { "count": 1 },
+ *         ,..
+ *     },
+ * }
+ *
+ * The "count" value represents the number of times its associated IP have
+ * visited a page.
+ *
+ * @param int $post_id The ID of an 'spt' post.
+ *
+ * @return array
+ *
+ * @since 1.3.4 
+ */
+function sptGetUniqueVisits($post_id) {
+	$data = unserialize(get_post_meta($post_id, 'sptData', true));
+	
+	$slave = array();
+	$master = array();
+
+	$slave_id = $data['slave_id'];
+	$master_id = $data['master_id'];
+
+	$slave_visits = $data["{$slave_id}_visits"];
+
+	if (!empty($slave_visits)) {
+		foreach ($slave_visits as $visit) {
+			$ip = $visit['ip'];
+
+			if (!isset($slave[$ip])) {
+				$slave[$ip] = array(
+					'count' => 0
+				);
+			}
+
+			// Keep track of the number of visits.
+			$slave[$ip]['count'] += 1;
+		}
+	}
+
+	$master_visits = $data["{$master_id}_visits"];
+
+	if (!empty($master_visits)) {
+		foreach ($master_visits as $visit) {
+			$ip = $visit['ip'];
+
+			if (!isset($master[$ip])) {
+				$master[$ip] = array(
+					'count' => 0
+				);
+			}
+
+			// Keep track of the number of visits.
+			$master[$ip]['count'] += 1;
+		}
+	}
+
+	return array(
+		'slave' => $slave,
+		'master' => $master,
+	);
+}

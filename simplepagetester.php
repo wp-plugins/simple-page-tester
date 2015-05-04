@@ -7,8 +7,17 @@
 * Author: Simple Page Tester
 * Author URI: http://www.simplepagetester.com
 * Plugin URI: http://simplepagetester.com
-* Version: 1.3.4
+* Version: 1.4.0
 */
+
+if (!defined('SPT_PLUGIN_DIR'))
+    define('SPT_PLUGIN_DIR', plugin_dir_path(__FILE__));
+
+if (!defined('SPT_PLUGIN_URL'))
+    define('SPT_PLUGIN_URL', plugin_dir_url(__FILE__));
+
+/* Include the tour utility class */
+require_once(SPT_PLUGIN_DIR . 'utils/class.tour.php');
 
 /*******************************************************************************
 ** sptRegisterPostType
@@ -32,7 +41,7 @@ function sptRegisterPostType() {
 				'all_items' => __('All Split Tests')
 			),
 			'description' => 'Simple Page Tester - WordPress A/B split testing',
-			'public' => true,
+			'public' => false,
 			'menu_position' => 20,
 			'hierarchical' => true,
 			'supports' => array(
@@ -47,8 +56,7 @@ function sptRegisterPostType() {
 				'page-attributes' => false,
 				'post-formats' => false
 			),
-			'show_in_menu' => true,
-			'show_in_nav_menus' => false,
+			'show_ui' => true,
 			'can_export' => true,
 			'rewrite' => true,
 			'menu_icon' => plugins_url('simple-page-tester/images/icon-spt.png')
@@ -193,6 +201,9 @@ function sptDetailsMeta() {
 	global $post;
 	wp_nonce_field( plugin_basename(__FILE__), 'spt_noncename' );
 
+	// Get the unique visitors for the master and slave pages.
+	$visits = sptGetUniqueVisits($post->ID);
+
 	/* Make sure we only do this for regular saves and we have permission */
 	if ((defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) ||
 		!current_user_can( 'edit_page', $post->ID ) ) {
@@ -217,7 +228,8 @@ function sptDetailsMeta() {
 				<td colspan="3"><div id="sptChart" style="height: 350px;" class="sptGoogleChart"><img id="sptChartLoader" src="' . plugins_url('simple-page-tester/images/spt-loader.gif') . '" /></div></td>
 			</tr>
 		</table>
-	</div>
+	</div>'
+	?>
 
 	<div class="sptVariationContainer">
 		<table id="sptMaster" width="100%">
@@ -225,41 +237,42 @@ function sptDetailsMeta() {
 				<th colspan="3"><h3>Master</h3></th>
 			</tr>
 				<th scope="row">Page Name:</th>
-				<td>' . $masterPost->post_title . '</td>
+				<td><?php echo $masterPost->post_title; ?></td>
 				<td style="text-align: right;">
-					<a class="button" href="' . admin_url('/post.php?post=' . $masterPost->ID . '&action=edit') . '">Edit Page</a> <a class="button" href="' . get_permalink($masterPost->ID) . '">View Page</a>
+					<a class="button" href="<?php echo admin_url('/post.php?post=' . $masterPost->ID . '&action=edit'); ?>">Edit Page</a> <a class="button" href="<?php echo get_permalink($masterPost->ID); ?>">View Page</a>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row" colspan="1">Page Slug:</th>
-				<td colspan="1">/' . $masterPost->post_name . '</td>
+				<td colspan="1"><?php echo '/' . $masterPost->post_name; ?></td>
 				<td colspan="1" style="text-align: right;">
 					<div class="sptDeclareButtonContainer">
-						<a id="' . $masterPost->ID . '" class="button-primary spt_declare">Declare Winner</a><br /><img class="winner_loader" style="display: none;" src="' . plugins_url('simple-page-tester/images/spt-loader.gif') . '" />
+						<a id="<?php echo $masterPost->ID; ?>" class="button-primary spt_declare">Declare Winner</a><br /><img class="winner_loader" style="display: none;" src="<?php echo plugins_url('simple-page-tester/images/spt-loader.gif'); ?>" />
 					</div>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row" colspan="1">Adjust Percentage Of Views:</th>
 				<td colspan="2">
-					<select name="sptData[master_weight]" id="master_weight">';
-
-	for ($i = 90; $i > 0; $i = $i - 10) {
-		echo '<option value="' . $i . '"' .
-		($sptData['master_weight'] == $i ? ' selected="selected"' : '') .
-		'>' . $i . '</option>';
-	}
-	echo '			</select> %
+					<select name="sptData[master_weight]" id="master_weight">
+						<?php for ($i = 90; $i > 0; $i = $i - 10): ?>
+							<option value="<?php echo $i; ?>" <?php selected($sptData['master_weight'], $i); ?>><?php echo $i; ?></option>
+						<?php endfor; ?>
+					</select> %
 				</td>
 			</tr>
 			<tr>
-				<th scope="row" colspan="1">Total Unique Visits:</th>
-				<td colspan="2">' . (!empty($sptData[$sptData['master_id'] . '_visits']) ? count($sptData[$sptData['master_id'] . '_visits']) : 0) . '</td>
-			</tr>';
+				<th scope="row" colspan="1">Total Views:</th>
+				<td colspan="2"><?php echo (!empty($sptData[$sptData['master_id'] . '_visits']) ? count($sptData[$sptData['master_id'] . '_visits']) : 0); ?></td>
+			</tr>
+			<tr>
+				<th scope="row" colspan="1">Unique Views:</th>
+				<td colspan="2">
+					<?php echo count($visits['master']); ?>
+				</td>
+			</tr>
 
-	do_action('spt_master_table_content_end', $post->ID, $sptData['master_id']);
-
-	echo '
+			<?php do_action('spt_master_table_content_end', $post->ID, $sptData['master_id']); ?>
 		</table>
 	</div><!-- /.sptVariationContainer -->
 
@@ -269,47 +282,47 @@ function sptDetailsMeta() {
 				<th colspan="3"><h3>Variation</h3></th>
 			</tr>
 				<th scope="row">Page Name:</th>
-				<td>' . $slavePost->post_title . '</td>
+				<td><?php echo $slavePost->post_title; ?></td>
 				<td style="text-align: right;">
-					<a class="button" href="' . admin_url('/post.php?post=' . $slavePost->ID . '&action=edit') . '">Edit Page</a> <a class="button" href="' . get_permalink($slavePost->ID) . '">View Page</a>
+					<a class="button" href="<?php echo admin_url('/post.php?post=' . $slavePost->ID . '&action=edit'); ?>">Edit Page</a> <a class="button" href="<?php echo get_permalink($slavePost->ID); ?>">View Page</a>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row" colspan="1">Page Slug:</th>
-				<td colspan="1">/' . $slavePost->post_name . '</td>
+				<td colspan="1"><?php echo '/' . $slavePost->post_name; ?></td>
 				<td colspan="1" style="text-align: right;">
 					<div class="sptDeclareButtonContainer">
-						<a id="' . $slavePost->ID . '" class="button-primary spt_declare">Declare Winner</a><br /><img class="winner_loader" style="display: none;" src="' . plugins_url('simple-page-tester/images/spt-loader.gif') . '" />
+						<a id="<?php echo $slavePost->ID; ?>" class="button-primary spt_declare">Declare Winner</a><br /><img class="winner_loader" style="display: none;" src="<?php echo plugins_url('simple-page-tester/images/spt-loader.gif'); ?>" />
 					</div>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row" colspan="1">Adjust Percentage Of Views:</th>
 				<td colspan="2">
-					<select name="sptData[slave_weight]" id="slave_weight">';
-
-	for ($i = 90; $i > 0; $i = $i - 10) {
-		echo '<option value="' . $i . '"' .
-		($sptData['slave_weight'] == $i ? ' selected="selected"' : '') .
-		'>' . $i . '</option>';
-	}
-
-	echo '			</select> %
+					<select name="sptData[slave_weight]" id="slave_weight">
+						<?php for ($i = 90; $i > 0; $i = $i - 10): ?>
+							<option value="<?php echo $i; ?>" <?php selected($sptData['slave_weight'], $i); ?>><?php echo $i; ?></option>
+						<?php endfor; ?>
+					</select> %
 				</td>
 			</tr>
 			<tr>
-				<th scope="row" colspan="1">Total Unique Visits:</th>
-				<td colspan="2">' . (!empty($sptData[$sptData['slave_id'] . '_visits']) ? count($sptData[$sptData['slave_id'] . '_visits']) : 0) . '</td>
-			</tr>';
+				<th scope="row" colspan="1">Total Views:</th>
+				<td colspan="2"><?php echo (!empty($sptData[$sptData['slave_id'] . '_visits']) ? count($sptData[$sptData['slave_id'] . '_visits']) : 0); ?></td>
+			</tr>
+			<tr>
+				<th scope="row" colspan="1">Unique Views:</th>
+				<td colspan="2">
+					<?php echo count($visits['slave']); ?>
+				</td>
+			</tr>
 
-	do_action('spt_variation_table_content_end', $post->ID, $sptData['slave_id']);
-
-	echo '
+			<?php do_action('spt_variation_table_content_end', $post->ID, $sptData['slave_id']); ?>
 		</table>
-	</div><!-- /.sptVariationContainer -->';
+	</div><!-- /.sptVariationContainer -->
 
+	<?php
 	// Sort out the Google Chart for the Master and Variation
-
 	echo '<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 	<script type="text/javascript">
 	google.load("visualization", "1", {packages:["corechart"]});
@@ -378,11 +391,35 @@ function sptSideOptionsMeta() {
 
 	$sptData = unserialize(get_post_meta($post->ID, 'sptData', true));
 
+	if (isset($sptData['pause_test']) && $sptData['pause_test'] === 'on')
+		$pause_test = ' checked="checked"';
+	else
+		$pause_test = '';
+	?>
+	<?php if (isset($sptData['pause_test']) && $sptData['pause_test'] === 'on'): ?>
+    	<h3>Test Status: <span class="spt_test_status inactive">Not Running</span></h3>
+	<?php else: ?>
+    	<h3>Test Status: <span class="spt_test_status active">Active</span></h3>
+	<?php endif; ?>
+
+	<p class="sptPauseTestContainer">
+	    <input type="checkbox" id="sptPauseTest" name="sptData[pause_test]" <?php echo $pause_test; ?>> <label for="sptPauseTest">Pause Split Test</label>
+	</p>
+
+	<hr />
+
+	<?php
+
 	if (isset($sptData['force_same']) && $sptData['force_same'] == 'on') $sptData['force_same'] = ' checked="checked"';
 
 	// Core options
 	echo '<p><input type="checkbox" name="sptData[force_same]" id="sptForceSame"' .  (isset($sptData['force_same']) ? $sptData['force_same'] : '') . ' /> <label for="sptForceSame">Force Users To View The Same Variation During A Browsing Session</label></p>';
 
+	?>
+
+	<hr />
+
+	<?php
 	// Hook so others can add their own options
 	do_action('spt_after_side_options');
 
@@ -441,13 +478,38 @@ function sptPageSidebarBoxMeta() {
 	echo '<p>To use this page as the master page in a split test simply click the setup button below:</p>';
 	echo '<p><span title="Simple Page Tester: New split test" id="sptSetupSplitTest" class="button-secondary">Setup New Split Test</span></p>';
 
-	echo '<script type="text/javascript">
-	jQuery(document).ready(function() {
-		jQuery("#sptSetupSplitTest").click(function() {
-			tb_show("Setup New Split Test", ajaxurl + "?action=sptGetThickboxContent&post_id=' . $post->ID . '&height=640&width=640&TB_iframe=true");
-		});
-	});
-	</script>';
+    echo '<script type="text/javascript">
+    jQuery(document).ready(function() {
+        jQuery("#sptSetupSplitTest").click(function() {
+            tb_show("Setup New Split Test", ajaxurl + "?action=sptGetThickboxContent&post_id=' . $post->ID . '&height=640&width=640&TB_iframe=true");
+        });
+    });
+    </script>';
+
+    /* JKOHLBACH: removing tour stuff from setup click for now
+    ?>
+	<script>
+		(function($) {
+			$(function() {
+		        $('#sptSetupSplitTest').click(function(e) {
+		        	e.preventDefault();
+
+
+                    var params = $.param({
+			            action   : SPT_GUIDE.actions.getThickboxContent,
+			            post_id  : SPT_GUIDE.post,
+			            height   : SPT_GUIDE.height,
+			            width    : SPT_GUIDE.width,
+			            TB_iframe: 'true'
+			        });
+
+			        tb_show('Setup New Split Test', [ajaxurl, params].join('?'));
+		        });
+			});
+		}(jQuery));
+	</script>
+<?php
+    */
 }
 
 /*******************************************************************************
@@ -501,6 +563,10 @@ function sptRecordVisit($sptID, $sptData) {
 	global $sptSession;
 	global $post;
 
+	// If the split test has been paused, then there's no need to record the visit.
+	if (isset($sptData['pause_test']) && $sptData['pause_test'] === 'on')
+		return;
+
 	// If in doubt, record the visit, next we'll test some conditions where it shouldn't recorded
 	$recordTheVisit = true;
 
@@ -551,21 +617,26 @@ function sptRedirect() {
 	if (!is_single() && !is_page())
 		return;
 
+	// Get the split test ID and exit if it's not valid
+	$sptID = get_post_meta($post->ID, 'sptID', true);
+	if ($sptID == null || empty($sptID) || !is_numeric($sptID) || $sptID == '0')
+		return;
+
+	// Retrieve the split test data and exit if it's not a valid test
+	$sptData = unserialize(get_post_meta($sptID, 'sptData', true));
+	if ($sptData == null || empty($sptData))
+		return;
+
+	// If the split testing has been paused, then don't do any redirects.
+	if (isset($sptData['pause_test']) && $sptData['pause_test'] === 'on') {
+	    return;
+	}
+
 	// Check if this is the first redirect and if so record the visit
 	$sessionRedirect = $sptSession->getData('spt_redirect');
 	if (isset($sessionRedirect) && $sessionRedirect == true) {
 		// Unset the session variable because we might end up visiting again
 		$sptSession->unsetData('spt_redirect');
-
-		// Get the split test ID and exit if it's not valid
-		$sptID = get_post_meta($post->ID, 'sptID', true);
-		if ($sptID == null || empty($sptID) || !is_numeric($sptID) || $sptID == '0')
-			return;
-
-		// Retrieve the split test data and exit if it's not a valid test
-		$sptData = unserialize(get_post_meta($sptID, 'sptData', true));
-		if ($sptData == null || empty($sptData))
-			return;
 
 		sptRecordVisit($sptID, $sptData);
 
@@ -573,16 +644,6 @@ function sptRedirect() {
 		// Exit here so we don't end up redirecting again
 		return;
 	} else {
-		// Get the split test ID and exit if it's not valid
-		$sptID = get_post_meta($post->ID, 'sptID', true);
-		if ($sptID == null || empty($sptID) || !is_numeric($sptID) || $sptID == '0')
-			return;
-
-		// Retrieve the split test data and exit if it's not a valid test
-		$sptData = unserialize(get_post_meta($sptID, 'sptData', true));
-		if ($sptData == null || empty($sptData))
-			return;
-
 		// Determine which page to redirect to
 		list($usec, $sec) = explode(' ', microtime());
 		mt_srand((float)$sec + ((float)$usec * 100000));
@@ -634,7 +695,7 @@ function sptRedirect() {
 		$redirectURL = get_permalink($pageID);
 
 		// Get query vars from the current URL and pass them to the selected landing page
-		$redirectURL = add_query_arg($_GET, $redirectURL);
+		$redirectURL = add_query_arg(esc_url_raw($_GET), $redirectURL);
 
 		// Perform the redirect to the desired split page
 		wp_redirect($redirectURL, 302);
@@ -793,6 +854,11 @@ wp_enqueue_script('utils');
 wp_enqueue_script('editor');
 wp_enqueue_style( 'sptStylesheet', plugins_url('simple-page-tester/css/spt.css'));
 
+/* 1.4.0 (jkohlbach): temporary work around for Types plugin clash until they fix
+** their issue of loading Types JS files on non-required pages. */
+wp_dequeue_script('installer-admin');
+wp_dequeue_style('installer-admin');
+
 do_action('admin_print_styles');
 do_action('admin_print_scripts');
 do_action('admin_head');
@@ -924,6 +990,36 @@ function sptDeclareWinner() {
 }
 
 /*******************************************************************************
+** sptPauseTest
+** Ajax function to include the ability to pause split testing
+** @since 1.3.4
+*******************************************************************************/
+function sptPauseTest() {
+	include('PauseTest.php');
+	exit();
+}
+
+/*******************************************************************************
+** sptWinnerAction
+** Ajax function to include the ability to set what action to take on the
+** other page after declaring a winner.
+** @since 1.3.4
+*******************************************************************************/
+function sptWinnerAction() {
+	include('WinnerAction.php');
+	exit();
+}
+
+/*******************************************************************************
+** sptTourClose
+** Close the plugin tour.
+** @since 1.3.4
+*******************************************************************************/
+function sptTourClose() {
+	include('sptTourClose.php');
+}
+
+/*******************************************************************************
 ** sptFilterData
 ** Filter all the data for nasty surprises
 ** @since 1.1.1
@@ -1015,6 +1111,33 @@ function sptAddStatsResetButtons() {
 }
 
 /*******************************************************************************
+** sptDeclareActionOptions
+** Allow the user to select an action to perform after declaring a winner.
+** The options are displayed as radio buttons.
+** @since 1.3.4
+*******************************************************************************/
+function sptDeclareActionOptions() {
+	global $post;
+
+	$sptData = unserialize(get_post_meta($post->ID, 'sptData', true));
+
+	if (isset($sptData['winner_action']) && !empty($sptData['winner_action']))
+		$action = $sptData['winner_action'];
+	else
+		$action = 'archive';
+
+	?>
+	<hr />
+	<p class="sptWinnerActionContainer">
+	    <?php _e('After declaring a winner:'); ?>
+
+	    <label><input type="radio" name="sptData[winner_action]" value="archive" <?php checked($action, 'archive'); ?> /> <?php _e('Archive other variation'); ?></label>
+	    <label><input type="radio" name="sptData[winner_action]" value="delete" <?php checked($action, 'delete'); ?> /> <?php _e('Delete other variation'); ?></label>
+	</p>
+<?php
+}
+
+/*******************************************************************************
 ** sptAddCustomColumns
 ** Add custom columns to the list page (type, stats, etc)
 ** @since 1.2
@@ -1025,6 +1148,7 @@ function sptAddCustomColumns($columns) {
     $columns['title'] = 'Test Name';
     $columns['sptTestType'] = 'Test Type';
     $columns['sptTestStats'] = 'Statistics';
+    $columns['sptTestStatus'] = 'Test Status';
     $columns['date'] = 'Created Date';
     return $columns;
 }
@@ -1073,6 +1197,14 @@ function sptAddCustomColumnsContent($column, $post_id) {
 				$html = apply_filters('spt_list_column_test_stats', $html, $sptData);
 
 				echo $html;
+			break;
+			case 'sptTestStatus': ?>
+				<?php if (isset($sptData['pause_test']) && $sptData['pause_test'] === 'on'): ?>
+					<strong class="spt_test_status inactive">Not Running</strong>
+				<?php else: ?>
+					<strong class="spt_test_status active">Active</strong>
+				<?php endif; ?>
+			<?php
 			break;
 		}
 	}
@@ -1214,6 +1346,8 @@ function sptDismissAdminNotice($noticeId) {
 ** @since 1.0
 *******************************************************************************/
 function sptActivation() {
+	SPT_Utils_Tour::instance()->updateOptions();
+
     flush_rewrite_rules(); // 1.3.1: flush rewrite rules on activation
 }
 
@@ -1223,6 +1357,8 @@ function sptActivation() {
 ** @since 1.0
 *******************************************************************************/
 function sptDeactivation() {
+	SPT_Utils_Tour::instance()->deleteOptions();
+
     flush_rewrite_rules(); // 1.3.1: flush rewrite rules on deactivation
 }
 
@@ -1234,6 +1370,9 @@ function sptDeactivation() {
 function sptInit() {
 	/* Register the SPT post type */
 	sptRegisterPostType();
+
+	/* Register the SPT archive post status */
+	// sptRegisterPostStatus();
 
 	/* Fire up the SPT session handler */
 	require_once('SPTSessionHandler.php');
@@ -1260,9 +1399,15 @@ function sptInit() {
 	add_action('wp_ajax_sptReplaceSearchResults', 'sptReplaceSearchResults');
 	add_action('wp_ajax_sptCreateSptPost', 'sptCreateSptPost');
 	add_action('wp_ajax_sptDeclareWinner', 'sptDeclareWinner');
+	add_action('wp_ajax_sptPauseTest', 'sptPauseTest');
+	add_action('wp_ajax_sptWinnerAction', 'sptWinnerAction');
+	add_action('wp_ajax_sptTourClose', 'sptTourClose');
 
 	// Add stats reset buttons to options, right at the bottom
 	add_action('spt_after_side_options', 'sptAddStatsResetButtons', 100);
+
+	// Add the "declare winner action" options at the bottom.
+	add_action('spt_after_side_options', 'sptDeclareActionOptions', 100);
 
 	// Add stuff to list page
 	add_filter('manage_spt_posts_columns', 'sptAddCustomColumns', 10, 1);
@@ -1270,7 +1415,6 @@ function sptInit() {
 
 	// Remove variations from the loop
 	add_action('pre_get_posts', 'sptRemoveVariationsFromLoop');
-
 }
 
 /*******************************************************************************
@@ -1295,6 +1439,77 @@ function sptAdminInit() {
 	add_action('wp_ajax_sptDismissAdminNotice', 'sptDismissAdminNotice');
 }
 
+function sptRegisterAdminStyles() {
+	wp_register_style('sptGuide', SPT_PLUGIN_URL . 'css/sptGuide.css', array('wp-pointer', 'thickbox'), '0.1');
+}
+
+function sptRegisterAdminScripts() {
+	global $post;
+
+	wp_register_script('sptGuide', SPT_PLUGIN_URL . 'js/sptGuide.js', array('wp-pointer', 'thickbox'), '0.1', true);
+
+	wp_localize_script('sptGuide', 'SPT_GUIDE', array(
+		'actions' => array(
+			'getThickboxContent' => 'sptGetThickboxContent',
+			'closeTour'          => 'sptTourClose',
+		),
+		'nonces' => array(
+			'getThickboxContent' => wp_create_nonce('sptGetThickboxContent'),
+			'closeTour'          => wp_create_nonce('sptTourClose'),
+		),
+		'screen' => SPT_Utils_Tour::instance()->getCurrentScreen(),
+		'height' => 640,
+		'width' => 640,
+		'texts' => array(
+			'btnPrevTour' => __('Previous'),
+			'btnNextTour' => __('Next'),
+			'btnCloseTour' => __('Close'),
+			'btnStartTour' => __('Start Tour')
+		),
+		'urls' => array(
+			'ajax' => admin_url('admin-ajax.php')
+		),
+		'post' => $post->ID,
+	));
+
+	wp_register_script('sptAdmin', SPT_PLUGIN_URL . 'js/sptAdmin.js', array('jquery'), '0.1', true);
+
+	wp_localize_script('sptAdmin', 'SPT_ADMIN', array(
+		'actions' => array(
+			'pause'        => 'sptPauseTest',
+			'winnerAction' => 'sptWinnerAction',
+		),
+		'nonces' => array(
+			'pause'        => wp_create_nonce('spt-pause-test'),
+			'winnerAction' => wp_create_nonce('spt-winner-action'),
+		),
+		'post' => $post->ID
+	));
+
+	$screen = get_current_screen();
+
+	switch ($screen->id) {
+		// The 'spt' edit screen.
+		case 'spt':
+			wp_enqueue_script('sptAdmin');
+			break;
+
+		// Enable tour on these pages.
+		case 'spt':
+		case 'post':
+		case 'page':
+		case 'edit-spt':
+		case 'edit-post':
+		case 'edit-page':
+		case 'plugins':
+			if (get_option('sptTourStatus') === 'open') {
+				wp_enqueue_style('sptGuide');
+				wp_enqueue_script('sptGuide');
+			}
+			break;
+	}
+}
+
 /* Initialize the plugin */
 register_activation_hook(__FILE__, 'sptActivation');
 register_deactivation_hook(__FILE__, 'sptDeactivation');
@@ -1302,6 +1517,9 @@ register_deactivation_hook(__FILE__, 'sptDeactivation');
 /* Initialise */
 add_action('init', 'sptInit');
 add_action('admin_init', 'sptAdminInit');
+
+add_action('admin_enqueue_scripts', 'sptRegisterAdminStyles');
+add_action('admin_enqueue_scripts', 'sptRegisterAdminScripts');
 
 /* Remove submenus from SPT menu and add custom ones */
 add_action('admin_menu', 'sptRemoveAddNew');

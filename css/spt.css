@@ -146,6 +146,25 @@
 	text-align: right;
 }
 
+.sptPauseTestContainer,
+.sptWinnerActionContainer {
+	position: relative;
+}
+
+.sptWinnerActionContainer > label {
+	display: block;
+}
+
+.sptSpinnerOverlay {
+	background: rgba(255, 255, 255, 0.5) url('../images/spt-loader.gif') no-repeat center center;
+	position: absolute;
+	display: block;
+	bottom: 0;
+	right: 0;
+	left: 0;
+	top: 0;
+}
+
 .sptBiggerText {
 	font-size: 120%;
 	font-weight: bold;
@@ -175,4 +194,12 @@
 
 .spt_existing_search_post_type {
 	font-style: italic;
+}
+
+.spt_test_status {
+	color: #00ff00;
+}
+
+.spt_test_status.inactive {
+	color: #ff0000;
 }

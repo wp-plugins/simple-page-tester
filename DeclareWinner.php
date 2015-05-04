@@ -24,8 +24,26 @@ if ($isMaster) {
 	delete_post_meta($sptData['slave_id'], 'sptID');
 	wp_delete_post($sptID, true);
 	
-	// Delete slave page
-	wp_delete_post($sptData['slave_id'], true);
+	switch ($sptData['winner_action']) {
+		case 'delete':
+			// Delete slave page
+			wp_delete_post($sptData['slave_id'], true);
+			break;
+		
+		case 'archive':
+			$slave = get_post($sptData['slave_id']);
+
+			// Put a suffix to the post name to indicate it's been archived.
+			$name = sprintf('%s-archived-variation', $slave->post_name);
+
+			// Change the post status of the slave page.
+			wp_update_post(array(
+				'ID'          => $slave->ID,
+				'post_name'   => $name,
+				'post_status' => 'trash'
+			));
+			break;
+	}
 	
 	echo $winnerID;
 	
@@ -43,8 +61,24 @@ if ($isMaster) {
 	delete_post_meta($sptData['slave_id'], 'sptID');
 	wp_delete_post($sptID, true);
 	
-	// Delete master page
-	wp_delete_post($sptData['master_id'], true);
+	switch ($sptData['winner_action']) {
+		case 'delete':
+			// Delete master page
+			wp_delete_post($sptData['master_id'], true);
+			break;
+		
+		case 'archive':
+			// Put a suffix to the post name to indicate it's been archived.
+			$name = sprintf('%s-archived-variation', $masterSlug);
+
+			// Change the post status of the master page.
+			$result = wp_update_post(array(
+				'ID'          => $masterPost->ID,
+				'post_name'   => $name,
+				'post_status' => 'trash'
+			));
+			break;
+	}
 	
 	// Set slave slug to master slug
 	$slavePost = array();
