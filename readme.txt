@@ -69,11 +69,14 @@ For a list of frequently asked questions and more [see our knowledge base](http:
 
 == Changelog ==
 
+= 1.4.1 =
+* Bugfix: Fixing url escaping issue affecting some home page tests due to improper escaping of GET paramters, shifted the escape down lower just before the redirect occurs.
+
 = 1.4.0 =
 * Bugfix: Temporary workaround added to the Thickbox popup to fix a class with the Types plugin. Just until they fix their issue of loading Types JS files on non-required pages.
 * Bugfix: If a visitor visits the test slug, redirect them to the Master
 * Feature: Added a Tour to the plugin which is activated when the plugin is Activated
-* Feature: Added a new metric to show "unique visitors" to in order to better separate view count from unique visitors. Changed existing metric to "total views"
+* Feature: Added a new metric to show "unique views" to in order to better separate the total view count from unique views. Changed existing metric to "total views"
 * Feature: Allow archiving of tests so you can keep both variations after a test finishes. This is now the default behavior. The losing variation will replace the Variation's slug and the winner will replace the Master's slug. It's up to the admin to delete the second page.
 * Feature: Added the ability to "Pause" a test in progress. Paused tests shuffle all traffic to the "Master" and do not record visits or conversions.
 * Feature: Added a column to show the status of a test on the All Split Tests list view

@@ -7,7 +7,7 @@
 * Author: Simple Page Tester
 * Author URI: http://www.simplepagetester.com
 * Plugin URI: http://simplepagetester.com
-* Version: 1.4.0
+* Version: 1.4.1
 */
 
 if (!defined('SPT_PLUGIN_DIR'))
@@ -695,10 +695,10 @@ function sptRedirect() {
 		$redirectURL = get_permalink($pageID);
 
 		// Get query vars from the current URL and pass them to the selected landing page
-		$redirectURL = add_query_arg(esc_url_raw($_GET), $redirectURL);
+		$redirectURL = add_query_arg($_GET, $redirectURL);
 
 		// Perform the redirect to the desired split page
-		wp_redirect($redirectURL, 302);
+		wp_redirect(esc_url_raw($redirectURL), 302);
 
 		// Stop any PHP from executing after the redirect
 		exit();
